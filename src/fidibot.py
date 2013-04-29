@@ -20,10 +20,28 @@ class FidiBot(irc.bot.SingleServerIRCBot):
         c.join(self.channel)
 
     def on_privmsg(self, c, e):
-        pass
+        # split incoming string into "command message"
+        command = lower(e.arguments[0].split(" ", 1)[0])
+        try:
+            msg = e.arguments[0].split(" ", 1)[1]
+        except IndexError:
+            msg = ""
+        
+        if command == "pes":
+            if msg:
+                c.privmsg(self.channel, msg)
+            else:
+                c.privmsg(e.source.nick, "Ti na pw?")
+        else:
+            c.privmsg(e.source.nick, "Ti thes na peis %s?" % command)
 
     def on_pubmsg(self, c, e):
-        pass
+        string = e.arguments[0]
+        string_low = lower(e.arguments[0])
+        if "fidi" in string_low:
+            answer = " ".join([word for word in string.split() if "fidi" not in lower(word)])
+            c.privmsg(e.target, answer)
+
 
 def get_args():
     parser = argparse.ArgumentParser()
