@@ -1,6 +1,6 @@
+scratch/
 *.class
 *.pyc
 *.pyo
 .project
 .pydevproject
-
