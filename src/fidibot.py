@@ -5,6 +5,7 @@
 import argparse
 import irc.bot
 from irc.strings import lower
+from logsetup import setup_logging
 
 class FidiBot(irc.bot.SingleServerIRCBot):
     def __init__(self, channel, nickname, server, port=6667, realname=None, password=None):
@@ -56,6 +57,7 @@ def get_args():
 
 def main():
     args = get_args()
+    setup_logging()
     bot = FidiBot(args.channel, args.nickname, args.server, args.port)
     bot.start()
 
