@@ -67,14 +67,22 @@ class ServerMsgFormatter(logging.Formatter):
 
 def setup_logging():
     """Set up logger options"""
+    # Setup root logger
+    logger = logging.getLogger('')
+    logger.setLevel(logging.DEBUG)
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(logging.Formatter("%(levelname)-8s %(message)s"))
+    logger.addHandler(handler)
+    
     # Setup irc.client logger
     client_logger = logging.getLogger('irc.client')
     client_logger.setLevel(logging.DEBUG)
+    client_logger.propagate = False
     # add filters
     client_logger.addFilter(LowLevelFilter())
     client_logger.addFilter(PingPongFilter())
     client_logger.addFilter(PrivMsgFilter())
     # add handler
     client_handler = logging.StreamHandler(sys.stdout)
-    client_handler.setFormatter(ServerMsgFormatter())
+    client_handler.setFormatter(ServerMsgFormatter("CLIENT   %(message)s"))
     client_logger.addHandler(client_handler)
