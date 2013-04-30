@@ -10,7 +10,13 @@ from logsetup import setup_logging
 import logging
 log = logging.getLogger(__name__)
 
+# set unicode decoding to replace errors
+from irc.buffer import DecodingLineBuffer as DLB
+DLB.errors = 'replace'
+
+
 class FidiBot(irc.bot.SingleServerIRCBot):
+
     def __init__(self, channel, nickname, server, port=6667, realname=None, password=''):
         if channel[0] != "#":
             # make sure channel starts with a #
@@ -19,7 +25,7 @@ class FidiBot(irc.bot.SingleServerIRCBot):
         self.realname = realname if realname else nickname
         self.password = password
         self.identified = False
-        irc.bot.SingleServerIRCBot.__init__(self, [(server, port)], nickname, realname)
+        super(FidiBot, self).__init__([(server, port)], nickname, realname)
 
     def on_nicknameinuse(self, c, e):
         c.nick(c.get_nickname() + "_")
@@ -30,7 +36,7 @@ class FidiBot(irc.bot.SingleServerIRCBot):
     def on_privnotice(self, c, e):
         if e.source.nick == "NickServ":
             if "NickServ identify" in e.arguments[0]:
-                log.debug("NickServ asks as to identify")
+                log.debug("NickServ asks us to identify")
                 if self.password:
                     log.info("Sending password to NickServ")
                     c.privmsg("NickServ", "identify " + self.password)
