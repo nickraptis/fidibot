@@ -3,8 +3,23 @@
 """Module to hold logging functions"""
 
 import logging
-import sys
+import re, sys
 import irc.events
+
+colors = """
+        \x1f|        # Underline
+        \x02|        # Bold
+        \x12|        # Reverse
+        \x0f|        # Normal
+        \x16|        # Italic
+        
+        \x03         # Color
+        (?:\d{1,2}   # with one or two digits for foreground
+        (?:,\d{1,2}  # and maybe a comma and another 2 digits
+        )?)?         # for background
+         """
+strip_colors = re.compile(colors, re.UNICODE | re.VERBOSE)
+
 
 class LowLevelFilter(logging.Filter):
     """A filter for irc.client low level events"""
@@ -60,6 +75,7 @@ class ServerMsgFormatter(logging.Formatter):
                     message = message[1:]
             except IndexError:
                 message = ''
+            message = strip_colors.sub("", message)
             # if the command is numeric map it to a string
             if command in irc.events.numeric:
                 command = irc.events.numeric[command].upper()
