@@ -7,11 +7,15 @@ import irc.bot
 from irc.strings import lower
 from logsetup import setup_logging
 
+import logging
+log = logging.getLogger(__name__)
+
 class FidiBot(irc.bot.SingleServerIRCBot):
-    def __init__(self, channel, nickname, server, port=6667, realname=None, password=None):
+    def __init__(self, channel, nickname, server, port=6667, realname=None, password=''):
         self.channel = channel
         self.realname = realname if realname else nickname
         self.password = password
+        self.identified = False
         irc.bot.SingleServerIRCBot.__init__(self, [(server, port)], nickname, realname)
 
     def on_nicknameinuse(self, c, e):
@@ -19,6 +23,21 @@ class FidiBot(irc.bot.SingleServerIRCBot):
 
     def on_welcome(self, c, e):
         c.join(self.channel)
+        
+    def on_privnotice(self, c, e):
+        if e.source.nick == "NickServ":
+            if "NickServ identify" in e.arguments[0]:
+                log.debug("NickServ asks as to identify")
+                if self.password:
+                    log.info("Sending password to NickServ")
+                    c.privmsg("NickServ", "identify " + self.password)
+                else:
+                    log.warning("We were asked to identify but we have no password")
+            elif "You are now identified" in e.arguments[0]:
+                log.info("We are now identified with NickServ")
+                self.identified = True
+            elif "Invalid password" in e.arguments[0]:
+                log.error("Invalid password! Check your settings!")
 
     def on_privmsg(self, c, e):
         # split incoming string into "command message"
@@ -58,7 +77,7 @@ def get_args():
 def main():
     args = get_args()
     setup_logging()
-    bot = FidiBot(args.channel, args.nickname, args.server, args.port)
+    bot = FidiBot(args.channel, args.nickname, args.server, args.port, password=args.password)
     bot.start()
 
 if __name__ == "__main__":
