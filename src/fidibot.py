@@ -12,6 +12,9 @@ log = logging.getLogger(__name__)
 
 class FidiBot(irc.bot.SingleServerIRCBot):
     def __init__(self, channel, nickname, server, port=6667, realname=None, password=''):
+        if channel[0] != "#":
+            # make sure channel starts with a #
+            channel = "#" + channel
         self.channel = channel
         self.realname = realname if realname else nickname
         self.password = password
@@ -77,7 +80,8 @@ def get_args():
 def main():
     args = get_args()
     setup_logging()
-    bot = FidiBot(args.channel, args.nickname, args.server, args.port, password=args.password)
+    bot = FidiBot(args.channel, args.nickname, args.server, args.port,
+                  realname= args.realname, password=args.password)
     bot.start()
 
 if __name__ == "__main__":
