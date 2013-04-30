@@ -48,21 +48,35 @@ class ServerMsgFormatter(logging.Formatter):
         if "FROM SERVER" in msg:
             # extract command and message
             tokens = record.args[0].split(" ", 3)
+            # [1:] gets rid of the first character which is a colon
+            source = tokens[0][1:]
+            # we are only interested in source if it has a nickname
+            source = source.split("!")[0] if "!" in source else ""
             command = tokens[1]
+            target = tokens[2]
             try:
                 message = tokens[3]
-                if message[0] == ':':
+                while message[0] == ':':
                     message = message[1:]
             except IndexError:
                 message = ''
             # if the command is numeric map it to a string
             if command in irc.events.numeric:
                 command = irc.events.numeric[command].upper()
+            # prune to 11 characters
+            command = command[:11]
             # set up new format
-            record.args = (command, message)
-            record.msg = "%s  %s"
+            if command in ("JOIN", "PART", "QUIT"):
+                record.args = (command, source, command.lower(), target, message)
+                record.msg = "%-11s %s %sed channel %s %s"
+            elif source:
+                record.args = (command, source, message)
+                record.msg = "%-11s %s: %s"
+            else:
+                record.args = (command, message)
+                record.msg = "%-11s %s"
         if "TO SERVER" in msg:
-            record.msg = "-->  %s"
+            record.msg = "---->  %s"
         return super(ServerMsgFormatter, self).format(record)
 
 def setup_logging():

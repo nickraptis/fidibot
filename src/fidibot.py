@@ -37,7 +37,7 @@ class FidiBot(irc.bot.SingleServerIRCBot):
                 else:
                     log.warning("We were asked to identify but we have no password")
             elif "You are now identified" in e.arguments[0]:
-                log.info("We are now identified with NickServ")
+                log.debug("We are now identified with NickServ")
                 self.identified = True
             elif "Invalid password" in e.arguments[0]:
                 log.error("Invalid password! Check your settings!")
