@@ -9,13 +9,14 @@ class BaseContext(object):
         self.connection = connection
         self.event = event
         self.module = module
+        self.bot = module.bot
         self.nick = event.source.nick
         self.channel = event.target
         self.input = event.arguments[0]
     
     def send(self, target, msgformat, args):
         output = msgformat % args
-        self.module.logger.debug("Sending to %s: %s", (target, output))
+        self.module.logger.debug("Sending to %s: %s", target, output)
         self.connection.privmsg(target, output)
 
     def do_public(self):
@@ -44,12 +45,12 @@ class BaseCommandContext(BaseContext):
             argument = tokens[2]
         except IndexError:
             argument = ''
-        f = self.getattribute("cmd_"+command+"_public", 
-                self.getattribute("cmd_"+command, None))
+        f = getattr(self, "cmd_"+command+"_public", 
+                getattr(self, "cmd_"+command, None))
         if f:
             self.module.logger.debug(
                 "%s sent public command %s with argument %s",
-                (self.nick, command, argument))
+                self.nick, command, argument)
             f(argument)
             return True
         return False
@@ -63,12 +64,12 @@ class BaseCommandContext(BaseContext):
             argument = tokens[1]
         except IndexError:
             argument = ''
-        f = self.getattribute("cmd_"+command+"_private", 
-                self.getattribute("cmd_"+command, None))
+        f = getattr(self, "cmd_"+command+"_private", 
+                getattr(self, "cmd_"+command, None))
         if f:
             self.module.logger.debug(
                 "%s sent private command %s with argument %s",
-                (self.nick, command, argument))
+                self.nick, command, argument)
             f(argument)
             return True
         return False
@@ -80,7 +81,7 @@ class BaseModule(object):
     
     def __init__(self, bot):
         self.bot = bot
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger(self.__module__)
         self.init()
         
     def init(self):
@@ -95,5 +96,5 @@ class BaseModule(object):
         return context.do_private()
     
     def send(self, context, target, msgformat, args):
-        self.logger.debug(msgformat, args)
+        self.logger.debug(msgformat, *args)
         context.send(target, msgformat, args)

@@ -6,6 +6,7 @@ import argparse
 import irc.bot
 from irc.strings import lower
 from logsetup import setup_logging
+from modules import active_modules
 
 import logging
 log = logging.getLogger(__name__)
@@ -25,6 +26,7 @@ class FidiBot(irc.bot.SingleServerIRCBot):
         self.realname = realname if realname else nickname
         self.password = password
         self.identified = False
+        self.modules = [m(self) for m in active_modules]
         super(FidiBot, self).__init__([(server, port)], nickname, realname)
 
     def on_nicknameinuse(self, c, e):
@@ -49,6 +51,10 @@ class FidiBot(irc.bot.SingleServerIRCBot):
                 log.error("Invalid password! Check your settings!")
 
     def on_privmsg(self, c, e):
+        for m in self.modules:
+            if m.on_privmsg(c, e):
+                return
+        
         # split incoming string into "command message"
         command = lower(e.arguments[0].split(" ", 1)[0])
         try:
@@ -65,6 +71,10 @@ class FidiBot(irc.bot.SingleServerIRCBot):
             c.privmsg(e.source.nick, "Ti thes na peis %s?" % command)
 
     def on_pubmsg(self, c, e):
+        for m in self.modules:
+            if m.on_pubmsg(c, e):
+                return
+        
         string = e.arguments[0]
         string_low = lower(e.arguments[0])
         if "fidi" in string_low:
