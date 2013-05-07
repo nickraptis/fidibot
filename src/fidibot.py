@@ -26,6 +26,7 @@ class FidiBot(irc.bot.SingleServerIRCBot):
         self.realname = realname if realname else nickname
         self.password = password
         self.identified = False
+        # load modules
         self.modules = [m(self) for m in active_modules]
         super(FidiBot, self).__init__([(server, port)], nickname, realname)
 
@@ -51,6 +52,7 @@ class FidiBot(irc.bot.SingleServerIRCBot):
                 log.error("Invalid password! Check your settings!")
 
     def on_privmsg(self, c, e):
+        # first try to defer the message to the active modules
         for m in self.modules:
             if m.on_privmsg(c, e):
                 return
@@ -71,6 +73,7 @@ class FidiBot(irc.bot.SingleServerIRCBot):
             c.privmsg(e.source.nick, "Ti thes na peis %s?" % command)
 
     def on_pubmsg(self, c, e):
+        # first try to defer the message to the active modules
         for m in self.modules:
             if m.on_pubmsg(c, e):
                 return
