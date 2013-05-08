@@ -6,9 +6,6 @@ Interesting attributes
 ----------------------
 active: A list of module names to import. Add modules here to activate them.
 
-active_modules: The list of active module classes.
-                This what you'd probably want to import.
-
 Base classes
 ------------
 Base classes live in the 'basemodule' file.
@@ -17,8 +14,18 @@ Base classes live in the 'basemodule' file.
 # define modules to get functionality from
 active = ["basiccmds", ]
 
-# this line is a programmatical way to do
-# from module_name import module
-# for each item in our 'active' list
-# you shouldn't need to mess with it.
-active_modules = [__import__(m, globals(), locals(), [], -1).module for m in active]
+
+def active_modules():
+    """Return the list of active module classes."""
+    active_modules = []
+    for module_name in active:
+        try:
+            # this corresponds to `from module_name import module`
+            active_modules.append(__import__(module_name, globals(), locals(), [], -1).module)
+        except ImportError:
+            import logging
+            logging.error("There isn't a module named %s to import" % module_name)
+        except AttributeError:
+            import logging
+            logging.error("The module named %s hasn't got a valid module attribute" % module_name)
+    return active_modules

@@ -19,16 +19,25 @@ class BasicCommandsContext(BaseCommandContext):
         """
         # determine if the source was a channel or a user
         target = self.channel if self.channel.startswith("#") else self.nick
-        self.send(target, "%s", argument)
+        if argument:
+            self.send(target, "%s", argument)
+        else:
+            self.send(target, "There's nothing to echo")
     
     def cmd_say_public(self, argument):
         """Say the argument back to the channel the command was called"""
-        self.send(self.channel, "%s", argument)
+        if argument:
+            self.send(self.channel, "%s", argument)
+        else:
+            self.send(self.channel, "There's nothing to say")
         
     def cmd_say_private(self, argument):
         """Say the argument to the list of channels the bot is in"""
-        for channel in self.bot.channels:
-            self.send(channel, "%s", argument) 
+        if argument:
+            for channel in self.bot.channels:
+                self.send(channel, "%s", argument)
+        else:
+            self.send(self.nick, "There's nothing to say")
 
     def cmd_disconnect_private(self, argument):
         """Disconnect from server. Bot will try to reconnect"""

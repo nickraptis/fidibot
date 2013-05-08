@@ -101,7 +101,7 @@ def setup_logging():
     logger = logging.getLogger('')
     logger.setLevel(logging.DEBUG)
     handler = logging.StreamHandler(sys.stdout)
-    handler.setFormatter(logging.Formatter("%(levelname)-8s %(message)s"))
+    handler.setFormatter(logging.Formatter("%(levelname)-8s %(name)-10s  %(message)s"))
     logger.addHandler(handler)
     
     # Setup irc.client logger

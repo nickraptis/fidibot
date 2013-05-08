@@ -62,7 +62,7 @@ class BaseContext(object):
         self.channel = event.target
         self.input = event.arguments[0]
     
-    def send(self, target, msgformat, args):
+    def send(self, target, msgformat, *args):
         """
         Send a formatted message to target.
         
@@ -122,9 +122,6 @@ class BaseCommandContext(BaseContext):
     See the `basiccmds` module for examples.
     """
     
-    def __init__(self, connection, event, module):
-        super(BaseCommandContext, self).__init__(connection, event, module)
-
     def do_public(self):
         """
         Dispatch a public event to a cmd__public or cmd_ method
@@ -236,6 +233,12 @@ class BaseModule(object):
         context = self.context_class(connection, event, self)
         return context.do_private()
     
-    def send(self, context, target, msgformat, args):
-        self.logger.debug(msgformat, *args)
-        context.send(target, msgformat, args)
+    def send(self, target, msgformat, *args):
+        """
+        Send a formatted message to target from outside a context.
+        
+        Read on BaseContext's .send() for more.
+        """
+        output = msgformat % args
+        self.logger.debug("Sending to %s: %s", target, output)
+        self.bot.connection.privmsg(target, msgformat % args)

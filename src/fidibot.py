@@ -27,7 +27,7 @@ class FidiBot(irc.bot.SingleServerIRCBot):
         self.password = password
         self.identified = False
         # load modules
-        self.modules = [m(self) for m in active_modules]
+        self.modules = [m(self) for m in active_modules()]
         super(FidiBot, self).__init__([(server, port)], nickname, realname)
 
     def on_nicknameinuse(self, c, e):
@@ -57,20 +57,15 @@ class FidiBot(irc.bot.SingleServerIRCBot):
             if m.on_privmsg(c, e):
                 return
         
-        # split incoming string into "command message"
+        # default behaviour if no module processes the message.
         command = lower(e.arguments[0].split(" ", 1)[0])
-        try:
-            msg = e.arguments[0].split(" ", 1)[1]
-        except IndexError:
-            msg = ""
-        
-        if command == "pes":
-            if msg:
-                c.privmsg(self.channel, msg)
-            else:
-                c.privmsg(e.source.nick, "Ti na pw?")
-        else:
-            c.privmsg(e.source.nick, "Ti thes na peis %s?" % command)
+        if "fidi" in command:
+            # maybe someone is calling us by name?
+            c.privmsg(e.source.nick, "You don't have to call me by name in private")
+            return
+        log.debug("Failed to understand private message '%s' from user %s",
+                  e.arguments[0], e.source.nick)
+        c.privmsg(e.source.nick, "I don't understand %s" % command)
 
     def on_pubmsg(self, c, e):
         # first try to defer the message to the active modules
@@ -78,11 +73,11 @@ class FidiBot(irc.bot.SingleServerIRCBot):
             if m.on_pubmsg(c, e):
                 return
         
-        string = e.arguments[0]
-        string_low = lower(e.arguments[0])
-        if "fidi" in string_low:
-            answer = " ".join([word for word in string.split() if "fidi" not in lower(word)])
-            c.privmsg(e.target, answer)
+        # default behaviour if no module processes the message.
+        if "fidi" in lower(e.arguments[0]):
+            log.debug("Failed to understand public message '%s' from user %s",
+                      e.arguments[0], e.source.nick)
+            c.privmsg(e.target, "Someone talking about me? Duh!")
 
 
 def get_args():
