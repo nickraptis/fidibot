@@ -3,10 +3,10 @@ import re
 from urllib2 import urlopen
 from urllib2 import URLError
 from urllib2 import HTTPError
-from basemodule import BaseModule, BaseContext
+from basemodule import BaseModule, BaseCommandContext
 
 
-class UrlParserContext(BaseContext):
+class UrlParserContext(BaseCommandContext):
     
     def parse_url(self, txt):
         result = re.findall(r'www\S+|https?\S+', txt)
@@ -34,17 +34,23 @@ class UrlParserContext(BaseContext):
                 return html.strip()
 
     def do_public(self):
+        if super(UrlParserContext, self).do_public():
+            return True
         urls = self.parse_url(self.input)
         if urls:
             for url in urls:
                 self.send(self.channel, "%s - %s", url, self.find_url_title(url))
         return True
-    
-    def do_private(self):
-        urls = self.parse_url(self.input)
+
+    def cmd_title(self, argument):
+        """Parse argument for urls and return page title."""
+        urls = self.parse_url(argument)
+        target = self.channel if self.channel.startswith("#") else self.nick
         if urls:
             for url in urls:
-                self.send(self.nick, "%s - %s", url, self.find_url_title(url))
+                self.send(target, "%s - %s", url, self.find_url_title(url))
+        else:
+                self.send(target, "No url in argument")
         return True
 
 
