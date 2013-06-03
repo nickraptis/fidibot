@@ -18,8 +18,10 @@ class UrlParserContext(BaseCommandContext):
             resp = requests.get(url)
             html = resp.text
         except RequestException as e:
+            self.logger.warning(e)
             return url, e.__doc__
         except ValueError as e:
+            self.logger.warning(e)
             return url, "Failed to parse url"
         else:
             resp.close()

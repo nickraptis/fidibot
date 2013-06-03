@@ -41,6 +41,7 @@ class BaseContext(object):
     event:      The event that spawned this instance.
     module:     The module to which we belong.
     bot:        The bot we are a part of.
+    logger:     The module's logger
     
     Convenience attributes:
     -----------------------
@@ -58,6 +59,7 @@ class BaseContext(object):
         self.event = event
         self.module = module
         self.bot = module.bot
+        self.logger = self.module.logger
         self.nick = event.source.nick
         self.channel = event.target
         self.input = event.arguments[0]
