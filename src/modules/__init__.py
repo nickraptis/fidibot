@@ -12,7 +12,7 @@ Base classes live in the 'basemodule' file.
 """
 
 # define modules to get functionality from
-active = ["basiccmds", ]
+active = ["basiccmds", "urlparser"]
 
 
 def active_modules():
