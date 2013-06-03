@@ -1,8 +1,7 @@
 # Author: George Lemanis <georlema@gmail.com>
 import re
-from urllib2 import urlopen
-from urllib2 import URLError
-from urllib2 import HTTPError
+import requests
+from requests.exceptions import RequestException
 from basemodule import BaseModule, BaseCommandContext
 
 
@@ -16,14 +15,14 @@ class UrlParserContext(BaseCommandContext):
         if url.find("://") == -1:
             url = "http://"+url 
         try:
-            sock = urlopen(url)
-            html = sock.read()
-        except HTTPError, e:
-            return e.code
-        except URLError, e:
-            return e.args
+            resp = requests.get(url)
+            html = resp.text
+        except RequestException as e:
+            return url, e.__doc__
+        except ValueError as e:
+            return url, "Failed to parse url"
         else:
-            sock.close()
+            resp.close()
             cmphtml = html.lower()
             start = cmphtml.find("<title>")
             end = cmphtml.find("</title>")
@@ -31,7 +30,7 @@ class UrlParserContext(BaseCommandContext):
                 return "Could not find page title!"
             else:
                 html = html[start+7:end]
-                return html.strip()
+                return resp.url, html.strip()
 
     def do_public(self):
         if super(UrlParserContext, self).do_public():
@@ -39,7 +38,8 @@ class UrlParserContext(BaseCommandContext):
         urls = self.parse_url(self.input)
         if urls:
             for url in urls:
-                self.send(self.channel, "%s - %s", url, self.find_url_title(url))
+                final_url, title = self.find_url_title(url)
+                self.send(self.channel, "%s - %s", final_url, title)
         return True
 
     def cmd_title(self, argument):
@@ -48,7 +48,8 @@ class UrlParserContext(BaseCommandContext):
         target = self.channel if self.channel.startswith("#") else self.nick
         if urls:
             for url in urls:
-                self.send(target, "%s - %s", url, self.find_url_title(url))
+                final_url, title = self.find_url_title(url)
+                self.send(target, "%s - %s", final_url, title)
         else:
                 self.send(target, "No url in argument")
         return True
