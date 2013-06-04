@@ -1,23 +1,28 @@
 # Author: George Lemanis <georlema@gmail.com>
+"""
+Module for parsing URLs in chat or on demand
+"""
+
 import re
 import requests
-from requests.exceptions import RequestException
 from basemodule import BaseModule, BaseCommandContext
 
 
 class UrlParserContext(BaseCommandContext):
-    
+
     def parse_url(self, txt):
+        """Return a list of all urls in line of text"""
         result = re.findall(r'www\S+|https?\S+', txt)
         return result
-    
+
     def find_url_title(self, url):
+        """Retrieve the title of a given URL"""
         if url.find("://") == -1:
-            url = "http://"+url 
+            url = "http://" + url
         try:
             resp = requests.get(url)
             html = resp.text
-        except RequestException as e:
+        except requests.RequestException as e:
             self.logger.warning(e)
             return url, e.__doc__
         except ValueError as e:
@@ -35,6 +40,7 @@ class UrlParserContext(BaseCommandContext):
                 return resp.url, html.strip()
 
     def do_public(self):
+        """Try to find URLs in every line and send back their title"""
         if super(UrlParserContext, self).do_public():
             return True
         urls = self.parse_url(self.input)
@@ -59,6 +65,5 @@ class UrlParserContext(BaseCommandContext):
 
 class UrlParserModule(BaseModule):
     context_class = UrlParserContext
-
 
 module = UrlParserModule
