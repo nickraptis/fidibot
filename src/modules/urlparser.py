@@ -59,7 +59,8 @@ class UrlParserContext(BaseCommandContext):
             for url in urls:
                 final_url, title = self.find_url_title(url)
                 self.send(self.channel, "%s - %s", final_url, title)
-        return True
+            return True
+        return False
 
     def cmd_title(self, argument):
         """Treat the argument as urls and return page title."""
@@ -69,9 +70,10 @@ class UrlParserContext(BaseCommandContext):
             for url in urls:
                 final_url, title = self.find_url_title(url)
                 self.send(target, "%s - %s", final_url, title)
+            return True
         else:
-                self.send(target, "No url in argument")
-        return True
+            self.send(target, "No url in argument")
+        return False
 
 
 class UrlParserModule(BaseModule):
