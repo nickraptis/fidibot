@@ -9,6 +9,7 @@ serves as an example of how to build a module for fidibot.
 # so it is always clean and understandable ;)
 
 from basemodule import BaseModule, BaseCommandContext
+from alternatives import _
 
 
 class BasicCommandsContext(BaseCommandContext):
@@ -22,14 +23,14 @@ class BasicCommandsContext(BaseCommandContext):
         if argument:
             self.send(target, "%s", argument)
         else:
-            self.send(target, "There's nothing to echo")
+            self.send(target, _("There's nothing to echo"))
     
     def cmd_say_public(self, argument):
         """Say the argument back to the channel the command was called"""
         if argument:
             self.send(self.channel, "%s", argument)
         else:
-            self.send(self.channel, "There's nothing to say")
+            self.send(self.channel, _("There's nothing to say"))
         
     def cmd_say_private(self, argument):
         """Say the argument to the list of channels the bot is in"""
@@ -37,15 +38,15 @@ class BasicCommandsContext(BaseCommandContext):
             for channel in self.bot.channels:
                 self.send(channel, "%s", argument)
         else:
-            self.send(self.nick, "There's nothing to say")
+            self.send(self.nick, _("There's nothing to say"))
 
     def cmd_disconnect_private(self, argument):
         """Disconnect from server. Bot will try to reconnect"""
-        self.bot.disconnect()
+        self.bot.disconnect(_("I'll be back!"))
     
     def cmd_die_private(self, argument):
         """Disconnect and exit"""
-        self.bot.die()
+        self.bot.die(_("Goodbye cruel world!"))
     
 class BasicCommandsModule(BaseModule):
     context_class = BasicCommandsContext

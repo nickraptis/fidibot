@@ -65,11 +65,11 @@ class FidiBot(irc.bot.SingleServerIRCBot):
         command = lower(e.arguments[0].split(" ", 1)[0])
         if "fidi" in command:
             # maybe someone is calling us by name?
-            c.privmsg(e.source.nick, "You don't have to call me by name in private")
+            c.privmsg(e.source.nick, _("You don't have to call me by name in private"))
             return
         log.debug("Failed to understand private message '%s' from user %s",
                   e.arguments[0], e.source.nick)
-        c.privmsg(e.source.nick, "I don't understand %s" % command)
+        c.privmsg(e.source.nick, _("I don't understand %s") % command)
 
     def on_pubmsg(self, c, e):
         # first try to defer the message to the active modules
@@ -81,7 +81,7 @@ class FidiBot(irc.bot.SingleServerIRCBot):
         if "fidi" in lower(e.arguments[0]):
             log.debug("Failed to understand public message '%s' from user %s",
                       e.arguments[0], e.source.nick)
-            c.privmsg(e.target, "Someone talking about me? Duh!")
+            c.privmsg(e.target, _("Someone talking about me? Duh!"))
 
     def on_join(self, c, e):
         nick = e.source.nick
