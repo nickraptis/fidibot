@@ -11,10 +11,13 @@ from basemodule import BaseModule, BaseContext
 
 
 ignore_list = ('fossbot', 'fossbot_')
+ignore_startswith ='!@'
 
 class IgnoreContext(BaseContext):
 
     def do_public(self):
+        if self.input[0] in ignore_startswith:
+            return True
         return self._do()
 
     def do_private(self):
