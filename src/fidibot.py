@@ -79,6 +79,11 @@ class FidiBot(irc.bot.SingleServerIRCBot):
                       e.arguments[0], e.source.nick)
             c.privmsg(e.target, "Someone talking about me? Duh!")
 
+    def on_join(self, c, e):
+        nick = e.source.nick
+        if not nick == c.get_nickname():
+            c.privmsg(e.target, "Welcome %s" % nick)
+
 
 def get_args():
     parser = argparse.ArgumentParser()
