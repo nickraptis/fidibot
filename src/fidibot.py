@@ -6,7 +6,8 @@ import argparse
 import irc.bot
 from irc.strings import lower
 from logsetup import setup_logging
-from modules import active_modules
+from modules import activate_modules
+from alternatives import alternatives, _
 
 import logging
 log = logging.getLogger(__name__)
@@ -26,8 +27,11 @@ class FidiBot(irc.bot.SingleServerIRCBot):
         self.realname = realname if realname else nickname
         self.password = password
         self.identified = False
+        self.alternatives = alternatives
         # load modules
-        self.modules = [m(self) for m in active_modules()]
+        active_modules, active_alternatives = activate_modules()
+        self.modules = [m(self) for m in active_modules]
+        self.alternatives.merge_with(active_alternatives)
         super(FidiBot, self).__init__([(server, port)], nickname, realname)
 
     def on_nicknameinuse(self, c, e):
@@ -82,7 +86,7 @@ class FidiBot(irc.bot.SingleServerIRCBot):
     def on_join(self, c, e):
         nick = e.source.nick
         if not nick == c.get_nickname():
-            c.privmsg(e.target, "Welcome %s" % nick)
+            c.privmsg(e.target, _("Welcome %s") % nick)
 
 
 def get_args():
