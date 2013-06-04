@@ -1,3 +1,5 @@
+src/alternatives
+src/alternatives/*
 scratch/
 log/
 *.class

@@ -7,7 +7,7 @@ import irc.bot
 from irc.strings import lower
 from logsetup import setup_logging
 from modules import activate_modules
-from alternatives import alternatives, _
+from alternatives import alternatives, read_files, _
 
 import logging
 log = logging.getLogger(__name__)
@@ -32,6 +32,9 @@ class FidiBot(irc.bot.SingleServerIRCBot):
         active_modules, active_alternatives = activate_modules()
         self.modules = [m(self) for m in active_modules]
         self.alternatives.merge_with(active_alternatives)
+        # add alternatives from directory
+        self.alternatives.merge_with(read_files())
+        self.alternatives.clean_duplicates()
         super(FidiBot, self).__init__([(server, port)], nickname, realname)
 
     def on_nicknameinuse(self, c, e):
