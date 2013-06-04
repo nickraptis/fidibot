@@ -31,6 +31,9 @@ class UrlParserContext(BaseCommandContext):
         if url.find("://") == -1:
             url = "http://" + url
         try:
+            # a HEAD first to thwart attacks
+            requests.head(url, timeout=0.5)
+            # now the actual request
             resp = requests.get(url)
             html = resp.text
         except requests.RequestException as e:
