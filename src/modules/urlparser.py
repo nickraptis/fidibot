@@ -28,13 +28,14 @@ class UrlParserContext(BaseCommandContext):
 
     def find_url_title(self, url):
         """Retrieve the title of a given URL"""
+        headers = {'User-Agent': 'Wget/1.13.4 (linux-gnu)'}
         if url.find("://") == -1:
             url = "http://" + url
         try:
             # a HEAD first to thwart attacks
-            requests.head(url, timeout=0.5)
+            requests.head(url, headers=headers, timeout=5)
             # now the actual request
-            resp = requests.get(url)
+            resp = requests.get(url, headers=headers)
             html = resp.text
         except requests.RequestException as e:
             self.logger.warning(e)
@@ -45,12 +46,14 @@ class UrlParserContext(BaseCommandContext):
         else:
             resp.close()
             cmphtml = html.lower()
-            start = cmphtml.find("<title>")
+            start = cmphtml.find("<title")
             end = cmphtml.find("</title>")
             if start == -1 or end == -1:
                 return resp.url, "Could not find page title!"
             else:
+                str.find
                 html = html[start+7:end]
+                html = html[html.find('>')+1:]
                 return resp.url, html.strip()
 
     def do_public(self):
