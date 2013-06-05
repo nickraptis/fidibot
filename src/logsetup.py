@@ -95,6 +95,12 @@ class ServerMsgFormatter(logging.Formatter):
             record.msg = "---->  %s"
         return super(ServerMsgFormatter, self).format(record)
 
+
+def escape_newlines(multiline):
+    """Escapes newlines in a string"""
+    return '\\n'.join(multiline.split('\n'))
+
+
 def setup_logging():
     """Set up logger options"""
     # Setup root logger

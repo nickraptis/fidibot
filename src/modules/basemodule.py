@@ -30,6 +30,7 @@ For an example, look at the `basiccmds` module.
 
 import logging
 from time import sleep
+from logsetup import escape_newlines as esc_nl
 
 
 class BaseContext(object):
@@ -69,23 +70,10 @@ class BaseContext(object):
         """
         Send a formatted message to target.
         
-        This is the prefferred method to send text back to IRC,
-        as any number of operations, like logging or text translation,
-        can be done before the text is actually sent.
-        
-        Translation is exactly the reason why you should use a formatted
-        scheme insted of just composing the arguments into the text yourself
-        and sending it as a whole.
+        Read on BaseModule's .send() for more.
         """
-        output = msgformat % args
-        self.module.logger.debug("Sending to %s: %s", target, output)
-        lines = output.split("\n")
-        self.connection.privmsg(target, lines.pop(0))
-        for line in lines:
-            sleep(1)
-            if not line:
-                line = " "
-            self.connection.privmsg(target, line)
+        # defer the send to the module, passing the connection as a key_arg
+        self.module.send(target, msgformat, *args, connection=self.connection)
 
     def do_public(self):
         """
@@ -242,12 +230,23 @@ class BaseModule(object):
         context = self.context_class(connection, event, self)
         return context.do_private()
     
-    def send(self, target, msgformat, *args):
+    def send(self, target, msgformat, *args, **kargs):
         """
-        Send a formatted message to target from outside a context.
+        Send a formatted message to target.
         
-        Read on BaseContext's .send() for more.
+        A context should pass it's connection as a key_arg.
+
+        This is the prefferred method to send text back to IRC,
+        as any number of operations, like logging or multiline send,
+        can be done before transparent to the caller.
         """
+        connection = kargs.get('connection', self.bot.connection)
         output = msgformat % args
-        self.logger.debug("Sending to %s: %s", target, output)
-        self.bot.connection.privmsg(target, msgformat % args)
+        self.logger.debug("Sending to %s: %s", target, esc_nl(output))
+        lines = output.split("\n")
+        connection.privmsg(target, lines.pop(0))
+        for line in lines:
+            sleep(1)
+            if not line:
+                line = " "
+            connection.privmsg(target, line)
