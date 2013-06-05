@@ -29,6 +29,7 @@ For an example, look at the `basiccmds` module.
 """
 
 import logging
+from time import sleep
 
 
 class BaseContext(object):
@@ -78,7 +79,13 @@ class BaseContext(object):
         """
         output = msgformat % args
         self.module.logger.debug("Sending to %s: %s", target, output)
-        self.connection.privmsg(target, output)
+        lines = output.split("\n")
+        self.connection.privmsg(target, lines.pop(0))
+        for line in lines:
+            sleep(1)
+            if not line:
+                line = " "
+            self.connection.privmsg(target, line)
 
     def do_public(self):
         """
