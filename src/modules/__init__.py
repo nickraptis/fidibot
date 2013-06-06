@@ -12,7 +12,7 @@ Base classes live in the 'basemodule' file.
 """
 
 # define modules to get functionality from
-active = ["ignore", "basiccmds","fail", "urlparser"]
+active = ["ignore", "basiccmds", "fail", "weather", "urlparser"]
 
 
 def activate_modules():
