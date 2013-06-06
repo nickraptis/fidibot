@@ -60,11 +60,13 @@ def read_files():
     """Scan the alternatives directory and return dict"""
     alts = Alternatives()
     alt_dir = join(dirname(__file__), "alternatives")
+    fmt_str = "Retrieving alternative strings from file %s"
     for dirpath, dirnames, filenames in walk(alt_dir, followlinks=True):
         for filename in filenames:
-            log.info("Retrieving alternative strings from file %s", filename)
-            with open(join(dirpath, filename)) as fp:
-                alts.merge_with(json.load(fp))
+            if filename.lower().endswith(".json"):
+                log.info(fmt_str, filename)
+                with open(join(dirpath, filename)) as fp:
+                    alts.merge_with(json.load(fp))
     return alts
 
 

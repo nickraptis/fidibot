@@ -96,9 +96,11 @@ class ServerMsgFormatter(logging.Formatter):
         return super(ServerMsgFormatter, self).format(record)
 
 
-def escape_newlines(multiline):
-    """Escapes newlines in a string"""
-    return '\\n'.join(multiline.split('\n'))
+def escape(string):
+    """Escapes newlines and tabs in a string"""
+    string = string.replace('\n', '\\n')
+    string = string.replace('\t', '\\t')
+    return string
 
 
 def setup_logging():

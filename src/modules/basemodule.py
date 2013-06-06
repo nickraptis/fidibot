@@ -30,7 +30,7 @@ For an example, look at the `basiccmds` module.
 
 import logging
 from time import sleep
-from logsetup import escape_newlines as esc_nl
+from logsetup import escape as esc
 
 
 class BaseContext(object):
@@ -242,7 +242,7 @@ class BaseModule(object):
         """
         connection = kargs.get('connection', self.bot.connection)
         output = msgformat % args
-        self.logger.debug("Sending to %s: %s", target, esc_nl(output))
+        self.logger.debug("Sending to %s: %s", target, esc(output))
         lines = output.split("\n")
         connection.privmsg(target, lines.pop(0))
         for line in lines:
