@@ -13,13 +13,14 @@ colors = """
         \x0f|        # Normal
         \x16|        # Italic
         
+        \x01|        # ACTION Heading
+        
         \x03         # Color
         (?:\d{1,2}   # with one or two digits for foreground
         (?:,\d{1,2}  # and maybe a comma and another 2 digits
         )?)?         # for background
          """
 strip_colors = re.compile(colors, re.UNICODE | re.VERBOSE)
-
 
 class LowLevelFilter(logging.Filter):
     """A filter for irc.client low level events"""
@@ -52,6 +53,23 @@ class PrivMsgFilter(logging.Filter):
             return False
         return True
 
+class ChannelLogFilter(logging.Filter):
+    """Filter for logging in moobot format"""
+
+    acc_types = ["KICK", "MODE", "JOIN", "NICK", "TOPIC"]
+
+    def filter(self, record):
+        msg = record.getMessage()
+        arg = record.args[0]
+        if "FROM SERVER" in msg or "TO SERVER" in msg:
+            if "CHANMODES=" in arg:
+                return False
+            for msg_type in self.acc_types:
+                if msg_type in arg:
+                    return True
+            if "PRIVMSG" in arg and "#" in arg:
+                return True
+        return False
 
 class ServerMsgFormatter(logging.Formatter):
     """Formatter that checks if the event is of 
@@ -95,6 +113,29 @@ class ServerMsgFormatter(logging.Formatter):
             record.msg = "---->  %s"
         return super(ServerMsgFormatter, self).format(record)
 
+class ChannelLogFormatter(logging.Formatter):
+    """Formatter to moobot format"""
+
+    def __init__(self, *args, **kargs):
+        self.bot = kargs['bot']
+        del(kargs['bot'])
+        super(ChannelLogFormatter, self).__init__(*args, **kargs)
+
+    def format(self, record):
+        from_to = record.msg
+        arg = record.args[0]
+        arg = strip_colors.sub("", arg)
+        if "TO SERVER" in from_to:
+            arg = ":%s %s" % (self.bot.nickname, arg)
+        if "ACTION" in arg:
+            arg = arg.replace("PRIVMSG", "CTCP")
+        if "PRIVMSG" in arg and "#" in arg:
+            arg = arg.replace("PRIVMSG", "PUBMSG")
+        
+        if self.usesTime():
+            asctime = self.formatTime(record, self.datefmt)
+        
+        return self._fmt % {'asctime': asctime, 'message': arg}
 
 def escape(string):
     """Escapes newlines and tabs in a string"""
@@ -109,9 +150,11 @@ def setup_logging():
     logger = logging.getLogger('')
     logger.setLevel(logging.DEBUG)
     handler = logging.StreamHandler(sys.stdout)
-    handler.setFormatter(logging.Formatter("%(levelname)-8s %(name)-10s  %(message)s"))
+    handler.setFormatter(logging.Formatter(
+        "%(levelname)-8s %(name)-10s  %(message)s"))
     logger.addHandler(handler)
-    
+
+def setup_client_logging(bot):
     # Setup irc.client logger
     client_logger = logging.getLogger('irc.client')
     client_logger.setLevel(logging.DEBUG)
@@ -119,8 +162,15 @@ def setup_logging():
     # add filters
     client_logger.addFilter(LowLevelFilter())
     client_logger.addFilter(PingPongFilter())
-    client_logger.addFilter(PrivMsgFilter())
+    # Setup channel logs
+    channel_logger = logging.getLogger('irc.client')
+    channel_handler = logging.StreamHandler(open("log/moobot.log", "a"))
+    channel_handler.addFilter(ChannelLogFilter())
+    channel_handler.setFormatter(ChannelLogFormatter(bot=bot,
+        fmt="%(asctime)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S"))
+    channel_logger.addHandler(channel_handler)
     # add handler
     client_handler = logging.StreamHandler(sys.stdout)
+    client_handler.addFilter(PrivMsgFilter())
     client_handler.setFormatter(ServerMsgFormatter("CLIENT   %(message)s"))
     client_logger.addHandler(client_handler)

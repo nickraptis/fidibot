@@ -1,7 +1,7 @@
 src/alternatives
 src/alternatives/*
+src/log/
 scratch/
-log/
 *.class
 *.pyc
 *.pyo

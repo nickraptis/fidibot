@@ -5,7 +5,7 @@
 import argparse
 import irc.bot
 from irc.strings import lower
-from logsetup import setup_logging
+from logsetup import setup_logging, setup_client_logging
 from modules import activate_modules
 from alternatives import alternatives, read_files, _
 
@@ -23,6 +23,7 @@ class FidiBot(irc.bot.SingleServerIRCBot):
         if channel[0] != "#":
             # make sure channel starts with a #
             channel = "#" + channel
+        self.nickname = nickname
         self.channel = channel
         self.realname = realname if realname else nickname
         self.password = password
@@ -38,7 +39,9 @@ class FidiBot(irc.bot.SingleServerIRCBot):
         super(FidiBot, self).__init__([(server, port)], nickname, realname)
 
     def on_nicknameinuse(self, c, e):
-        c.nick(c.get_nickname() + "_")
+        new_nick = c.get_nickname() + "_"
+        c.nick(new_nick)
+        self.nickname = new_nick
 
     def on_welcome(self, c, e):
         c.join(self.channel)
@@ -108,6 +111,7 @@ def main():
     setup_logging()
     bot = FidiBot(args.channel, args.nickname, args.server, args.port,
                   realname= args.realname, password=args.password)
+    setup_client_logging(bot)
     bot.start()
 
 if __name__ == "__main__":
