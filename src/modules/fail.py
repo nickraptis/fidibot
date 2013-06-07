@@ -15,10 +15,9 @@ alternatives_dict = {
 
 class FailContext(BaseCommandContext):
     
-    def cmd_fail_public(self, argument):
+    def cmd_fail(self, argument):
         """Give a random FAIL quote :-)"""
-        target = self.channel
-        self.send(target, _("FAIL mofa"))
+        self.send(self.target, _("FAIL mofa"))
 
 
 class FailModule(BaseModule):

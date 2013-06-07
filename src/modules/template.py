@@ -40,13 +40,10 @@ class TemplateContext(BaseCommandContext):
         You can instead end your command in _public or _private
         so it only works for channel or private messages
         """
-        # This is a nice recipe to get either the channel or the user,
-        # if your command works both in channel and private
-        target = self.channel if self.channel.startswith("#") else self.nick
         # Send something back
         # You should always use a formatted string so the bot can log easily
         # and you can use alternatives by wrapping your format string in _()
-        self.send(target, _("%s"), argument)
+        self.send(self.target, _("%s"), argument)
 
 
 # Now subclass Base Module and change it's context_class to your own

@@ -7,7 +7,6 @@ class WeatherContext(BaseCommandContext):
 
     def cmd_keros(self, argument):
         """Gives The Temperature and Weather of Nafpaktos """
-        target = self.channel if self.channel.startswith("#") else self.nick
         
         # Get the weather for Nafpaktos
         nafpaktos = pywapi.get_weather_from_weather_com('GRXX1283:1')
@@ -16,7 +15,7 @@ class WeatherContext(BaseCommandContext):
         error = nafpaktos.get('error')
         if error:
             self.logger.error(error)
-            self.send(target, _("Error retrieving data: %s"), error)
+            self.send(self.target, _("Error retrieving data: %s"), error)
             return
         
         # Get the Current Weather
@@ -26,7 +25,7 @@ class WeatherContext(BaseCommandContext):
         time = curcond.get('last_updated')
         
         fmt_str = _("The Temperature is %s\nThe Weather is %s\nNafpaktos %s")
-        self.send(target, fmt_str, temp, _(text), time)
+        self.send(self.target, fmt_str, temp, _(text), time)
 
     def cmd_kairos(self, argument):
         """Gives The Temperature and Weather of Nafpaktos """

@@ -19,11 +19,10 @@ class BasicCommandsContext(BaseCommandContext):
         that sent us the command.
         """
         # determine if the source was a channel or a user
-        target = self.channel if self.channel.startswith("#") else self.nick
         if argument:
-            self.send(target, "%s", argument)
+            self.send(self.target, "%s", argument)
         else:
-            self.send(target, _("There's nothing to echo"))
+            self.send(self.target, _("There's nothing to echo"))
     
     def cmd_say_public(self, argument):
         """Say the argument back to the channel the command was called"""
