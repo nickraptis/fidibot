@@ -5,6 +5,7 @@ Module for parsing URLs in chat or on demand
 
 import re
 import requests
+from googl import Googl
 from basemodule import BaseModule, BaseCommandContext
 
 regex = re.compile("""
@@ -55,33 +56,44 @@ class UrlParserContext(BaseCommandContext):
                 html = html[html.find('>')+1:]
                 return resp.url, html.strip()
 
+    def shorten(self, long_url):
+        goog = Googl()
+        resp = goog.shorten(long_url)
+        if resp.get('error'):
+            error = resp['error']['message']
+            self.logger.warning("Failed to shorten %s - %s", long_url, error)
+            return long_url
+        short_url = resp['id']
+        return short_url
+
     def do_public(self):
-        """Try to find URLs in every line and send back their title"""
+        """
+        Try to find URLs in every line and send back
+        short url andtheir title
+        """
         if super(UrlParserContext, self).do_public():
             return True
         urls = self.parse_urls(self.input)
-        if urls:
-            for url in urls:
-                final_url, title = self.find_url_title(url)
-                #self.send(self.channel, "%s - %s", final_url, title)
-                # temporarily until we have a shortener
-                self.send(self.channel, "%s", title)
-            return True
-        return False
+        return self._do_urls(urls)
 
     def cmd_title(self, argument):
-        """Treat the argument as urls and return page title."""
+        """Shorten url(s) and return page title(s)."""
+        if not argument:
+            self.send(self.target, "No url in argument")
         urls = argument.split()
-        target = self.channel if self.channel.startswith("#") else self.nick
+        return self._do_urls(urls)
+
+    def cmd_url(self, argument):
+        """Shorten url(s) and return page title(s)."""
+        self.cmd_title(argument)
+
+    def _do_urls(self, urls):
         if urls:
             for url in urls:
                 final_url, title = self.find_url_title(url)
-                #self.send(target, "%s - %s", final_url, title)
-                # temporarily until we have a shortener
-                self.send(target, "%s", final_url, title)
+                short_url = self.shorten(final_url)
+                self.send(self.target, "%s - %s", short_url, title)
             return True
-        else:
-            self.send(target, "No url in argument")
         return False
 
 

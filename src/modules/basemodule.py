@@ -50,6 +50,7 @@ class BaseContext(object):
     nick:    Nickname of the user that originated the event.
     channel: Channel name that the event was originated in, if any.
     input:   The full string received for the event.
+    target:  The user's nick for privates, or the channel for publics.
     
     Usage:
     ------
@@ -64,6 +65,7 @@ class BaseContext(object):
         self.logger = self.module.logger
         self.nick = event.source.nick
         self.channel = event.target
+        self.target = self.channel if self.channel.startswith("#") else self.nick
         self.input = event.arguments[0]
     
     def send(self, target, msgformat, *args):
