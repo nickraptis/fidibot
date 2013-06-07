@@ -51,7 +51,6 @@ class UrlParserContext(BaseCommandContext):
             if start == -1 or end == -1:
                 return resp.url, "Could not find page title!"
             else:
-                str.find
                 html = html[start+7:end]
                 html = html[html.find('>')+1:]
                 return resp.url, html.strip()
@@ -64,7 +63,9 @@ class UrlParserContext(BaseCommandContext):
         if urls:
             for url in urls:
                 final_url, title = self.find_url_title(url)
-                self.send(self.channel, "%s - %s", final_url, title)
+                #self.send(self.channel, "%s - %s", final_url, title)
+                # temporarily until we have a shortener
+                self.send(self.channel, "%s", title)
             return True
         return False
 
@@ -75,7 +76,9 @@ class UrlParserContext(BaseCommandContext):
         if urls:
             for url in urls:
                 final_url, title = self.find_url_title(url)
-                self.send(target, "%s - %s", final_url, title)
+                #self.send(target, "%s - %s", final_url, title)
+                # temporarily until we have a shortener
+                self.send(target, "%s", final_url, title)
             return True
         else:
             self.send(target, "No url in argument")
