@@ -34,10 +34,13 @@ class UrlParserContext(BaseCommandContext):
             url = "http://" + url
         try:
             # a HEAD first to thwart attacks
-            requests.head(url, headers=headers, timeout=5)
+            head = requests.head(url, headers=headers, timeout=5)
+            cont_type = head.headers.get('content-type')
+            if "html" not in cont_type or "xml" not in cont_type:
+                return head.url, cont_type.split(';')[0]
             # now the actual request
             resp = requests.get(url, headers=headers)
-            html = resp.text
+            html = resp.content.decode(resp.apparent_encoding, errors='replace')
         except requests.RequestException as e:
             self.logger.warning(e)
             return url, e.__doc__
@@ -92,7 +95,7 @@ class UrlParserContext(BaseCommandContext):
             for url in urls:
                 final_url, title = self.find_url_title(url)
                 short_url = self.shorten(final_url)
-                self.send(self.target, "%s - %s", short_url, title)
+                self.send(self.target, "%s -- %s", short_url, title)
             return True
         return False
 
