@@ -115,7 +115,10 @@ def main():
     bot = FidiBot(args.channel, args.nickname, args.server, args.port,
                   realname= args.realname, password=args.password)
     setup_client_logging(bot)
-    bot.start()
+    try:
+        bot.start()
+    except KeyboardInterrupt:
+        bot.disconnect("Going for an update!")
 
 if __name__ == "__main__":
     main()
