@@ -56,7 +56,7 @@ class PrivMsgFilter(logging.Filter):
 class ChannelLogFilter(logging.Filter):
     """Filter for logging in moobot format"""
 
-    acc_types = ["KICK", "MODE", "JOIN", "NICK", "TOPIC"]
+    acc_types = ["KICK", "MODE", "JOIN", "NICK", "TOPIC", "PART", "QUIT"]
 
     def filter(self, record):
         msg = record.getMessage()
