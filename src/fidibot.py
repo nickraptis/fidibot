@@ -83,6 +83,9 @@ class FidiBot(irc.bot.SingleServerIRCBot):
             if m.on_pubmsg(c, e):
                 return
         
+        # don't do default behaviour for the GitHub bots
+        if 'github' in e.source.nick.lower():
+            return
         # default behaviour if no module processes the message.
         if "fidi" in lower(e.arguments[0]):
             log.debug("Failed to understand public message '%s' from user %s",
