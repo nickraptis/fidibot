@@ -12,11 +12,12 @@ Base classes live in the 'basemodule' file.
 """
 
 # define modules to get functionality from
-active = ["ignore", "basiccmds", "fail", "weather", "urlparser"]
+active = ["ignore", "basiccmds", "help", "fail", "weather", "urlparser"]
 
 
 def activate_modules():
-    """Return the list of active module classes, and all their string alternatives"""
+    """Return the list of active module classes,
+    and all their string alternatives"""
     active_modules = []
     active_alternatives = {}
     for module_name in active:
@@ -27,11 +28,14 @@ def activate_modules():
             active_alternatives.update(m.alternatives_dict)
         except ImportError:
             import logging
-            logging.error("There isn't a module named %s to import" % module_name)
+            fmt_str = "There isn't a module named %s to import"
+            logging.error(fmt_str % module_name)
         except AttributeError as e:
             import logging
             if 'alternatives' in e.message:
-                logging.debug("The module named %s doesn't provide string alternatives" % module_name)
+                fmt_str = "The module named %s doesn't provide string alternatives"
+                logging.debug(fmt_str % module_name)
             else:
-                logging.error("The module named %s hasn't got a valid module attribute" % module_name)
+                fmt_str = "The module named %s hasn't got a valid module attribute"
+                logging.error(fmt_str % module_name)
     return active_modules, active_alternatives

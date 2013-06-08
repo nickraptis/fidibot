@@ -1,7 +1,7 @@
 # Author: Nick Raptis <airscorp@gmail.com>
 """Collection of introspection functions for the bot"""
 
-import re
+import inspect
 
 # General introspection functions #
 ###################################
@@ -10,18 +10,20 @@ def get_full_help(doc_lines):
     """Join the doctype to produce full help string."""
     full = []
     for line in doc_lines:
-        full.append(line.strip())
+        full.append(line)
     return "\n".join(full)
+
 
 def get_summary(doc_lines):
     """Get the first lines of the docstrings as a summary."""
     summary = []
     for line in doc_lines:
         if line:
-            summary.append(line.strip())
+            summary.append(line)
         else:
             break
     return " ".join(summary)
+
 
 def help_object(obj, name=None, full=False):
     """
@@ -32,18 +34,19 @@ def help_object(obj, name=None, full=False):
     """
     if not name:
         name = obj.__name__.split('.')[-1]
-    doc = obj.__doc__
+    doc = inspect.getdoc(obj)
+    # if the docstring is just whitespace it doesn't get cleaned
+    doc = doc.strip()
     if not doc:
         return "No help found"
-    doc_lines = obj.__doc__.strip().split('\n')
-    if not doc_lines:
-        return "No help found"
+    doc_lines = doc.split('\n')
     if full:
         full_help = get_full_help(doc_lines)
-        return "%s:\n%s" % (name, full_help)
+        return " - %s:\n%s" % (name, full_help)
     else:
         summary = get_summary(doc_lines)
         return "%-10s: %s" % (name, summary)
+
 
 def help_attr(obj, attr, name=None, full=False):
     """
@@ -52,8 +55,8 @@ def help_attr(obj, attr, name=None, full=False):
     If name is not given, it will use the function name.
     Set full=True to get full help, otherwise a summary.
     """
-
     return help_object(getattr(obj, attr), name=name, full=full)
+
 
 
 # Commands relative to the bot #
@@ -69,12 +72,14 @@ def parse_cmd_name(name):
         name = name.replace("_private", "")
         return name
 
+
 def parse_cmd_type(name):
     """Parse public, private, or both from the function name"""
     if not (name.endswith("_private") or name.endswith("_public")):
         return 'both'
     else:
         return name.split('_')[-1]
+
 
 def cmd_functions_list(context):
     """Get the command functions of a context in a list of tuples format"""
@@ -85,6 +90,7 @@ def cmd_functions_list(context):
         if cmd_name:
             commands[attr] = (cmd_name, cmd_type)
     return commands.items()
+
 
 def public_private_from_list(cmd_list):
     """Get dictionaries for private and private commands from a list"""
@@ -105,17 +111,26 @@ def public_private_from_list(cmd_list):
             private[fname] = cmd_name
     return public, private
 
+
 def public_private_of_module(module):
     """Get dictionaries for private and private commands of a module"""
-    context = module.module.context_class
+    context = module.context_class
     cmd_list = cmd_functions_list(context)
     return public_private_from_list(cmd_list)
 
+
+def list_commands(module):
+    """Get dict of available commands of a module"""
+    public, private = public_private_of_module(module)
+    public = public.values()
+    private = private.values()
+    return {'public': public, 'private': private}
 
 
 if __name__ == '__main__':
     import modules.basiccmds as a
     from pprint import pprint
+
     methodList = [method for method in dir(a) if callable(getattr(a, method))]
     
     print help_object(a)
@@ -132,10 +147,12 @@ if __name__ == '__main__':
     pprint(private)
     print
     
-    public, private = public_private_of_module(a)
+    public, private = public_private_of_module(a.module)
     pprint(public)
     pprint(private)
     print
+    
+    print list_commands(a.module)
     
     print 'Public:'
     for cmd in public:
