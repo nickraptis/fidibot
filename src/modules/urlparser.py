@@ -6,6 +6,7 @@ Module for parsing URLs in chat or on demand
 import re
 import requests
 from googl import Googl
+from logsetup import strip_colors
 from basemodule import BaseModule, BaseCommandContext
 
 regex = re.compile("""
@@ -13,7 +14,7 @@ regex = re.compile("""
                     https?://|       # http:// or https:// or
                     www\.            # www.
                    )\S+$             # more characters until the end
-                   """, re.IGNORECASE | re.VERBOSE)
+                   """, re.IGNORECASE | re.VERBOSE | re.UNICODE)
 
 def is_url(token):
     """Return true if the input is a URL"""
@@ -29,6 +30,8 @@ class UrlParserContext(BaseCommandContext):
 
     def find_url_title(self, url):
         """Retrieve the title of a given URL"""
+        url = strip_colors.sub("", url)
+        print (url,)
         headers = {'User-Agent': 'Wget/1.13.4 (linux-gnu)'}
         if url.find("://") == -1:
             url = "http://" + url

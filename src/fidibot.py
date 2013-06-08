@@ -91,6 +91,9 @@ class FidiBot(irc.bot.SingleServerIRCBot):
 
     def on_join(self, c, e):
         nick = e.source.nick
+        # ignore the commings and goings of the GitHub bots
+        if 'github' in nick.lower():
+            return
         if not nick == c.get_nickname():
             c.privmsg(e.target, _("Welcome %s") % nick)
 
