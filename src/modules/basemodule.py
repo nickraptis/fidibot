@@ -233,7 +233,7 @@ class BaseModule(object):
         context = self.context_class(connection, event, self)
         return context.do_private()
     
-    def list_commands(self, cmd_type=None):
+    def list_commands(self):
         """
         List module commands.
         
