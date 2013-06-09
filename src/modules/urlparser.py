@@ -6,6 +6,7 @@ Module for parsing URLs in chat or on demand
 import re
 import requests
 from googl import Googl
+from bs4 import BeautifulSoup
 from logsetup import strip_colors
 from basemodule import BaseModule, BaseCommandContext
 
@@ -31,7 +32,6 @@ class UrlParserContext(BaseCommandContext):
     def find_url_title(self, url):
         """Retrieve the title of a given URL"""
         url = strip_colors.sub("", url)
-        print (url,)
         headers = {'User-Agent': 'Wget/1.13.4 (linux-gnu)'}
         if url.find("://") == -1:
             url = "http://" + url
@@ -43,7 +43,7 @@ class UrlParserContext(BaseCommandContext):
                 return head.url, cont_type.split(';')[0]
             # now the actual request
             resp = requests.get(url, headers=headers)
-            html = resp.content.decode(resp.apparent_encoding, errors='replace')
+            html = resp.content
         except requests.RequestException as e:
             self.logger.warning(e)
             return url, e.__doc__
@@ -51,16 +51,15 @@ class UrlParserContext(BaseCommandContext):
             self.logger.warning(e)
             return url, "Failed to parse url"
         else:
-            resp.close()
-            cmphtml = html.lower()
-            start = cmphtml.find("<title")
-            end = cmphtml.find("</title>")
-            if start == -1 or end == -1:
-                return resp.url, "Could not find page title!"
-            else:
-                html = html[start+7:end]
-                html = html[html.find('>')+1:]
-                return resp.url, html.strip()
+            soup = BeautifulSoup(html)
+            try:
+                title = soup.title.text.strip()
+            except AttributeError as e:
+                self.logger.warning("Soup couldn't parse url %s", resp.url)
+                title = None
+            if not title:
+                title = "Could not find page title!"
+        return resp.url, title
 
     def shorten(self, long_url):
         goog = Googl()
