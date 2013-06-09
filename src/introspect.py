@@ -24,6 +24,9 @@ def get_summary(doc_lines):
             break
     return " ".join(summary)
 
+def get_name(obj):
+    """Get unqualified name."""
+    return obj.__name__.split('.')[-1]
 
 def help_object(obj, name=None, full=False):
     """
@@ -33,12 +36,12 @@ def help_object(obj, name=None, full=False):
     Set full=True to get full help, otherwise a summary.
     """
     if not name:
-        name = obj.__name__.split('.')[-1]
+        name = get_name(obj)
     doc = inspect.getdoc(obj)
-    # if the docstring is just whitespace it doesn't get cleaned
-    doc = doc.strip()
     if not doc:
         return "No help found"
+    # if the docstring is just whitespace it doesn't get cleaned
+    doc = doc.strip()
     doc_lines = doc.split('\n')
     if full:
         full_help = get_full_help(doc_lines)
@@ -80,6 +83,11 @@ def parse_cmd_type(name):
     else:
         return name.split('_')[-1]
 
+def parse_cmd_ispublic(name):
+    return not name.endswith("_private")
+
+def parse_cmd_isprivate(name):
+    return not name.endswith("_public")
 
 def cmd_functions_list(context):
     """Get the command functions of a context in a list of tuples format"""
@@ -91,17 +99,30 @@ def cmd_functions_list(context):
             commands[attr] = (cmd_name, cmd_type)
     return commands.items()
 
+def cmd_functions_dict(context, module_name):
+    """Get the command functions of a context in a list of tuples format"""
+    functions = {}
+    for attr in dir(context):
+        cmd_name = parse_cmd_name(attr)
+        if cmd_name:
+            functions[attr] = {'name': cmd_name,
+                               'function_name' : attr,
+                               'module_name': module_name}
+    return functions
 
-def public_private_from_list(cmd_list):
-    """Get dictionaries for private and private commands from a list"""
+def public_private_from_list(fnc_list):
+    """
+    Get dictionaries for private and private commands
+    from a functions list
+    """
     public = {}
     private = {}
     # the lambda just gets the cmd_type as the comparison key
     # Since cmd_type is a string we'll get the list sorted as
     # both, private, public
     # True means that we then reverse the list
-    cmd_list.sort(None, lambda x: x[1][1], True)
-    for fname, (cmd_name, cmd_type) in cmd_list:
+    fnc_list.sort(None, lambda x: x[1][1], True)
+    for fname, (cmd_name, cmd_type) in fnc_list:
         if cmd_type == 'public':
             public[fname] = cmd_name
         elif cmd_type == 'private':
@@ -115,8 +136,8 @@ def public_private_from_list(cmd_list):
 def public_private_of_module(module):
     """Get dictionaries for private and private commands of a module"""
     context = module.context_class
-    cmd_list = cmd_functions_list(context)
-    return public_private_from_list(cmd_list)
+    fnc_list = cmd_functions_list(context)
+    return public_private_from_list(fnc_list)
 
 
 def list_commands(module):
@@ -127,45 +148,62 @@ def list_commands(module):
     return {'public': public, 'private': private}
 
 
-if __name__ == '__main__':
-    import modules.basiccmds as a
-    from pprint import pprint
+########################################################################
 
-    methodList = [method for method in dir(a) if callable(getattr(a, method))]
+def build_module_index(module):
+    mod_file = inspect.getmodule(module)
+    mod_name = get_name(mod_file)
     
-    print help_object(a)
-    print help_object(a, full=True)
-    print
+    mod_index = {'summary': help_object(mod_file, mod_name),
+                   'help': help_object(mod_file, mod_name, True)}
     
-    c = a.module.context_class
-    cmd_list = cmd_functions_list(c)
-    print cmd_list
-    print
+    context = module.context_class
+    mod_index['functions'] = cmd_functions_dict(context, mod_name)
+    functions = mod_index['functions']
     
-    public, private = public_private_from_list(cmd_list)
-    pprint(public)
-    pprint(private)
-    print
+    for fname in functions:
+        cmd_name = functions[fname]['name']
+        f = getattr(context, fname)
+        functions[fname].update({'summary': help_object(f, cmd_name),
+                                'help': help_object(f, cmd_name, True)})
+    public = {}
+    for fname in functions:
+        cmd_name = functions[fname]['name']
+        if parse_cmd_ispublic(fname):
+            public[cmd_name] = functions[fname]
+    mod_index['public'] = public
     
-    public, private = public_private_of_module(a.module)
-    pprint(public)
-    pprint(private)
-    print
+    private = {}
+    for fname in functions:
+        cmd_name = functions[fname]['name']
+        if parse_cmd_isprivate(fname):
+            private[cmd_name] = functions[fname]
+    mod_index['private'] = private
     
-    print list_commands(a.module)
+    return mod_name, mod_index
+
+
+def build_index(modules):
+    index = {'modules': {}}
+
+    public = {}
+    private = {}
     
-    print 'Public:'
-    for cmd in public:
-        print help_attr(c, cmd, name=public[cmd])
-    print
-    print 'Public Full:'
-    for cmd in public:
-        print help_attr(c, cmd, name=public[cmd], full=True)
-    print
-    print 'Private:'
-    for cmd in private:
-        print help_attr(c, cmd, name=private[cmd])
-    print
-    print 'Private Full:'
-    for cmd in private:
-        print help_attr(c, cmd, name=private[cmd], full=True)
+    mods = index['modules']
+    for module in modules:
+        mod_name, mod_index = build_module_index(module)
+        mods[mod_name] = mod_index
+        public.update(mod_index['public'])
+        private.update(mod_index['private'])
+
+    index.update({'public': public, 'private': private})
+    return index
+
+
+if __name__ == '__main__':
+    from pprint import pprint as pp
+    from modules import activate_modules
+    modules, alts = activate_modules()
+
+    index = build_index(modules)
+    pp(index)
