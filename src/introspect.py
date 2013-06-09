@@ -24,9 +24,11 @@ def get_summary(doc_lines):
             break
     return " ".join(summary)
 
+
 def get_name(obj):
     """Get unqualified name."""
     return obj.__name__.split('.')[-1]
+
 
 def help_object(obj, name=None, full=False):
     """
@@ -51,17 +53,6 @@ def help_object(obj, name=None, full=False):
         return "%-10s: %s" % (name, summary)
 
 
-def help_attr(obj, attr, name=None, full=False):
-    """
-    Get help for an object's attribute.
-    
-    If name is not given, it will use the function name.
-    Set full=True to get full help, otherwise a summary.
-    """
-    return help_object(getattr(obj, attr), name=name, full=full)
-
-
-
 # Commands relative to the bot #
 ################################
 
@@ -76,28 +67,13 @@ def parse_cmd_name(name):
         return name
 
 
-def parse_cmd_type(name):
-    """Parse public, private, or both from the function name"""
-    if not (name.endswith("_private") or name.endswith("_public")):
-        return 'both'
-    else:
-        return name.split('_')[-1]
-
 def parse_cmd_ispublic(name):
     return not name.endswith("_private")
+
 
 def parse_cmd_isprivate(name):
     return not name.endswith("_public")
 
-def cmd_functions_list(context):
-    """Get the command functions of a context in a list of tuples format"""
-    commands = {}
-    for attr in dir(context):
-        cmd_name = parse_cmd_name(attr)
-        cmd_type = parse_cmd_type(attr)
-        if cmd_name:
-            commands[attr] = (cmd_name, cmd_type)
-    return commands.items()
 
 def cmd_functions_dict(context, module_name):
     """Get the command functions of a context in a list of tuples format"""
@@ -105,50 +81,21 @@ def cmd_functions_dict(context, module_name):
     for attr in dir(context):
         cmd_name = parse_cmd_name(attr)
         if cmd_name:
+            # hide commands that have the attribute hidden
+            try:
+                if getattr(context, attr).hidden:
+                    continue
+            except AttributeError:
+                pass
+            # add the command to available functions
             functions[attr] = {'name': cmd_name,
                                'function_name' : attr,
                                'module_name': module_name}
     return functions
 
-def public_private_from_list(fnc_list):
-    """
-    Get dictionaries for private and private commands
-    from a functions list
-    """
-    public = {}
-    private = {}
-    # the lambda just gets the cmd_type as the comparison key
-    # Since cmd_type is a string we'll get the list sorted as
-    # both, private, public
-    # True means that we then reverse the list
-    fnc_list.sort(None, lambda x: x[1][1], True)
-    for fname, (cmd_name, cmd_type) in fnc_list:
-        if cmd_type == 'public':
-            public[fname] = cmd_name
-        elif cmd_type == 'private':
-            private[fname] = cmd_name
-        else:
-            public[fname] = cmd_name
-            private[fname] = cmd_name
-    return public, private
 
-
-def public_private_of_module(module):
-    """Get dictionaries for private and private commands of a module"""
-    context = module.context_class
-    fnc_list = cmd_functions_list(context)
-    return public_private_from_list(fnc_list)
-
-
-def list_commands(module):
-    """Get dict of available commands of a module"""
-    public, private = public_private_of_module(module)
-    public = public.values()
-    private = private.values()
-    return {'public': public, 'private': private}
-
-
-########################################################################
+# Commands to build the index #
+###############################
 
 def build_module_index(module):
     mod_file = inspect.getmodule(module)
@@ -185,7 +132,7 @@ def build_module_index(module):
 
 def build_index(modules):
     index = {'modules': {}}
-
+    
     public = {}
     private = {}
     
@@ -195,7 +142,7 @@ def build_index(modules):
         mods[mod_name] = mod_index
         public.update(mod_index['public'])
         private.update(mod_index['private'])
-
+    
     index.update({'public': public, 'private': private})
     return index
 

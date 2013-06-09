@@ -46,7 +46,12 @@ class BasicCommandsContext(BaseCommandContext):
     def cmd_die_private(self, argument):
         """Disconnect and exit"""
         self.bot.die(_("Goodbye cruel world!"))
-    
+
+    # hide commands from help
+    cmd_disconnect_private.hidden = True
+    cmd_die_private.hidden = True
+
+
 class BasicCommandsModule(BaseModule):
     context_class = BasicCommandsContext
 
@@ -56,6 +61,7 @@ class BasicCommandsModule(BaseModule):
         for cmd in ['die', 'disconnect']:
             cmds['private'].remove(cmd)
         return cmds
+
 
 module = BasicCommandsModule
     

@@ -31,7 +31,6 @@ For an example, look at the `basiccmds` module.
 import logging
 from time import sleep
 from logsetup import escape as esc
-from introspect import list_commands
 
 
 class BaseContext(object):
@@ -233,17 +232,6 @@ class BaseModule(object):
         context = self.context_class(connection, event, self)
         return context.do_private()
     
-    def list_commands(self):
-        """
-        List module commands.
-        
-        This is automatic for command contexts. If you use the base
-        context, you should override and return something like
-        {'public': [], 'private': []}
-        yourself.
-        """
-        return list_commands(self)
-
     def send(self, target, msgformat, *args, **kargs):
         """
         Send a formatted message to target.
