@@ -5,6 +5,7 @@
 import logging
 import re, sys
 import irc.events
+from logging.handlers import TimedRotatingFileHandler as TRHandler
 
 colors = """
         \x1f|        # Underline
@@ -164,7 +165,7 @@ def setup_client_logging(bot):
     client_logger.addFilter(PingPongFilter())
     # Setup channel logs
     channel_logger = logging.getLogger('irc.client')
-    channel_handler = logging.StreamHandler(open("log/moobot.log", "a"))
+    channel_handler = TRHandler("log/moolog/moobot.log", when='midnight')
     channel_handler.addFilter(ChannelLogFilter())
     channel_handler.setFormatter(ChannelLogFormatter(bot=bot,
         fmt="%(asctime)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S"))
