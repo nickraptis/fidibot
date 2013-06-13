@@ -40,6 +40,31 @@ class FidiBot(irc.bot.SingleServerIRCBot):
         # build help index
         self.help_index = build_index(self.modules)
         super(FidiBot, self).__init__([(server, port)], nickname, realname)
+        self._pings_pending = 0
+        self._last_kicker = ''
+        self.connection.execute_every(300, self._keepalive)
+
+    def _keepalive(self):
+        if self._pings_pending >= 2:
+            log.warning("Connection timed out. Will try to reconnect!")
+            self.disconnect()
+            self._pings_pending = 0
+            return
+        try:
+            self.connection.ping('keep-alive')
+            self._pings_pending += 1
+        except irc.client.ServerNotConnectedError:
+            pass
+
+    def on_pong(self, c, e):
+        self._pings_pending = 0
+
+    def on_kick(self, c, e):
+        nick = e.arguments[0]
+        channel = e.target
+        if nick == c.get_nickname():
+            self._last_kicker = e.source.nick
+        c.execute_delayed(10, c.join, (channel,))
 
     def on_nicknameinuse(self, c, e):
         new_nick = c.get_nickname() + "_"
@@ -102,6 +127,12 @@ class FidiBot(irc.bot.SingleServerIRCBot):
             return
         if not nick == c.get_nickname():
             c.privmsg(e.target, _("Welcome %s") % nick)
+        elif self._last_kicker:
+            c.privmsg(e.target, _("Why did you kick me, %s?") % self._last_kicker)
+            self._last_kicker = ''
+
+    def on_bannedfromchan(self, c, e):
+        c.execute_delayed(10, c.join, (e.arguments[0],))
 
 
 def get_args():

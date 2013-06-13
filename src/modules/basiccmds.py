@@ -55,13 +55,5 @@ class BasicCommandsContext(BaseCommandContext):
 class BasicCommandsModule(BaseModule):
     context_class = BasicCommandsContext
 
-    def list_commands(self):
-        # hide disconnect and die commands
-        cmds = super(BasicCommandsModule, self).list_commands()
-        for cmd in ['die', 'disconnect']:
-            cmds['private'].remove(cmd)
-        return cmds
-
 
 module = BasicCommandsModule
-    

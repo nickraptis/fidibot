@@ -63,7 +63,7 @@ class ChannelLogFilter(logging.Filter):
         msg = record.getMessage()
         arg = record.args[0]
         if "FROM SERVER" in msg or "TO SERVER" in msg:
-            if "CHANMODES=" in arg:
+            if "CHANMODES=" in arg or "CHANNELLEN=" in arg:
                 return False
             for msg_type in self.acc_types:
                 if msg_type in arg:
@@ -87,7 +87,12 @@ class ServerMsgFormatter(logging.Formatter):
             # we are only interested in source if it has a nickname
             source = source.split("!")[0] if "!" in source else ""
             command = tokens[1]
-            target = tokens[2]
+            try:
+                target = tokens[2]
+            except IndexError:
+                source = tokens[1][1:]
+                command = tokens[0]
+                target = ''
             try:
                 message = tokens[3]
                 while message[0] == ':':
@@ -160,18 +165,18 @@ def setup_client_logging(bot):
     client_logger = logging.getLogger('irc.client')
     client_logger.setLevel(logging.DEBUG)
     client_logger.propagate = False
-    # add filters
-    client_logger.addFilter(LowLevelFilter())
-    client_logger.addFilter(PingPongFilter())
     # Setup channel logs
     channel_logger = logging.getLogger('irc.client')
     channel_handler = TRHandler("log/moolog/moobot.log", when='midnight')
+    channel_handler.addFilter(LowLevelFilter())
     channel_handler.addFilter(ChannelLogFilter())
     channel_handler.setFormatter(ChannelLogFormatter(bot=bot,
         fmt="%(asctime)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S"))
     channel_logger.addHandler(channel_handler)
-    # add handler
+    # add main handler
     client_handler = logging.StreamHandler(sys.stdout)
+    client_handler.addFilter(LowLevelFilter())
+    client_handler.addFilter(PingPongFilter())
     client_handler.addFilter(PrivMsgFilter())
     client_handler.setFormatter(ServerMsgFormatter("CLIENT   %(message)s"))
     client_logger.addHandler(client_handler)
