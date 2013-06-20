@@ -1,0 +1,16 @@
+# To activate, rename this file to just `config` without the extension
+
+
+# Positional arguments. They must be present unless
+# you plan to override them in the command line
+
+FIDI_SERVER="irc.freenode.net"
+FIDI_CHANNEL="fidibot"
+FIDI_USERNAME="fidibot"
+
+
+# Optional arguments, comment or uncomment at will
+
+FIDI_REALNAME="A small python bot"
+#FIDI_PASSWORD="password"
+#FIDI_PORT=6667
