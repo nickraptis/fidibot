@@ -24,7 +24,17 @@ then
 	FIDI_COMMAND+=" -p $FIDI_PORT"
 fi
 
-FIDI_COMMAND+=" $FIDI_SERVER $FIDI_CHANNEL $FIDI_USERNAME $@"
+FIDI_COMMAND+=" $FIDI_SERVER $FIDI_CHANNEL $FIDI_USERNAME"
+
+for OPTION in "$@"
+do
+	if [[ "$OPTION" == -* ]]
+	then
+		FIDI_COMMAND+=" $OPTION"
+	else
+		FIDI_COMMAND+=" \"$OPTION\""
+	fi
+done
 
 echo $FIDI_COMMAND
 eval $FIDI_COMMAND
