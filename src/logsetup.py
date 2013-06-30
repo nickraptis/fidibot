@@ -155,10 +155,19 @@ def setup_logging():
     # Setup root logger
     logger = logging.getLogger('')
     logger.setLevel(logging.DEBUG)
+    fmt = "%(levelname)-8s %(name)-10s  %(message)s"
+    datefmt="%Y-%m-%d %H:%M:%S"
+    # Log everything to stdout
     handler = logging.StreamHandler(sys.stdout)
-    handler.setFormatter(logging.Formatter(
-        "%(levelname)-8s %(name)-10s  %(message)s"))
+    handler.setFormatter(logging.Formatter(fmt))
     logger.addHandler(handler)
+    # Log errors to a file
+    error_handler = logging.FileHandler("log/errors.log")
+    error_handler.setFormatter(logging.Formatter(
+        "%%(asctime)s %s" % fmt, datefmt=datefmt))
+    error_handler.setLevel(logging.ERROR)
+    logger.addHandler(error_handler)
+
 
 def setup_client_logging(bot):
     # Setup irc.client logger

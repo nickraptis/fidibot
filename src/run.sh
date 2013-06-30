@@ -38,4 +38,18 @@ done
 
 echo $FIDI_COMMAND
 eval $FIDI_COMMAND
+RET=$?
 
+while [ $RET -gt 0 ]
+do
+	if [ $RET -eq 42 ]
+	then
+		echo "------------- Updating -------------"
+		./install.sh update
+	fi
+	
+	echo "------------ Restarting ------------"
+	echo $FIDI_COMMAND
+	eval $FIDI_COMMAND
+	RET=$?
+done

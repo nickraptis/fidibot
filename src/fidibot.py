@@ -155,7 +155,11 @@ def main():
     try:
         bot.start()
     except KeyboardInterrupt:
-        bot.disconnect("Going for an update!")
+        bot.disconnect(_("Someone closed me!"))
+    except Exception as e:
+        log.exception(e)
+        bot.disconnect(_("I crashed damn it!"))
+        raise SystemExit(4)
 
 if __name__ == "__main__":
     main()

@@ -47,9 +47,14 @@ class BasicCommandsContext(BaseCommandContext):
         """Disconnect and exit"""
         self.bot.die(_("Goodbye cruel world!"))
 
+    def cmd_crash_private(self, argument):
+        """Crash the bot for testing purposes"""
+        raise IndexError()
+
     # hide commands from help
     cmd_disconnect_private.hidden = True
     cmd_die_private.hidden = True
+    cmd_crash_private.hidden = True
 
 
 class BasicCommandsModule(BaseModule):
