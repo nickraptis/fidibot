@@ -24,7 +24,7 @@ class FidiBot(irc.bot.SingleServerIRCBot):
         if channel[0] != "#":
             # make sure channel starts with a #
             channel = "#" + channel
-        self.nickname = nickname
+        self.nickname = self._nickname_wanted = nickname
         self.channel = channel
         self.realname = realname if realname else nickname
         self.password = password
@@ -67,9 +67,16 @@ class FidiBot(irc.bot.SingleServerIRCBot):
         c.execute_delayed(10, c.join, (channel,))
 
     def on_nicknameinuse(self, c, e):
-        new_nick = c.get_nickname() + "_"
+        new_nick = self.nickname + "_"
         c.nick(new_nick)
+        c.execute_delayed(10, self.changeback_nickname)
         self.nickname = new_nick
+
+    def changeback_nickname(self):
+        if self.nickname.endswith('_'):
+            new_nick = self._nickname_wanted
+            self.connection.nick(new_nick)
+            self.nickname = new_nick
 
     def on_welcome(self, c, e):
         c.join(self.channel)

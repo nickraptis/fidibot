@@ -62,6 +62,8 @@ class ChannelLogFilter(logging.Filter):
     def filter(self, record):
         msg = record.getMessage()
         arg = record.args[0]
+        if "TO SERVER" in msg and "NICK" in msg:
+            return False
         if "FROM SERVER" in msg or "TO SERVER" in msg:
             if "CHANMODES=" in arg or "CHANNELLEN=" in arg:
                 return False
