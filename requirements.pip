@@ -1,5 +1,5 @@
-irc==8.3
+irc==8.4
 requests==1.2.3
-pywapi==0.3.3
+pywapi==0.3.4
 python-googl==0.2.2
 beautifulsoup4==4.2.1
