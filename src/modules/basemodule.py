@@ -246,9 +246,7 @@ class BaseModule(object):
         output = msgformat % args
         self.logger.debug("Sending to %s: %s", target, esc(output))
         lines = output.split("\n")
-        connection.privmsg(target, lines.pop(0))
         for line in lines:
-            sleep(1)
             if not line:
                 line = " "
             connection.privmsg(target, line)

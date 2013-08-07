@@ -40,6 +40,10 @@ class FidiBot(irc.bot.SingleServerIRCBot):
         # build help index
         self.help_index = build_index(self.modules)
         super(FidiBot, self).__init__([(server, port)], nickname, realname)
+        # set up rate limiting after 5 seconds to one message per second
+        self.connection.execute_delayed(5,
+            self.connection.set_rate_limit, (1,))
+        # set up keepalive
         self._pings_pending = 0
         self._last_kicker = ''
         self.connection.execute_every(300, self._keepalive)
