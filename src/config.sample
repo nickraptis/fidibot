@@ -14,3 +14,4 @@ FIDI_USERNAME="fidibot"
 FIDI_REALNAME="A small python bot"
 #FIDI_PASSWORD="password"
 #FIDI_PORT=6667
+#FIDI_CALLSIGN="fidi"

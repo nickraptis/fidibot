@@ -20,7 +20,8 @@ DLB.errors = 'replace'
 
 class FidiBot(irc.bot.SingleServerIRCBot):
 
-    def __init__(self, channel, nickname, server, port=6667, realname=None, password=''):
+    def __init__(self, channel, nickname, server, port=6667,
+                 realname=None, password='', callsign='fidi'):
         if channel[0] != "#":
             # make sure channel starts with a #
             channel = "#" + channel
@@ -28,6 +29,7 @@ class FidiBot(irc.bot.SingleServerIRCBot):
         self.channel = channel
         self.realname = realname if realname else nickname
         self.password = password
+        self.callsign = callsign
         self.identified = False
         self.alternatives = alternatives
         # load modules
@@ -108,7 +110,7 @@ class FidiBot(irc.bot.SingleServerIRCBot):
         
         # default behaviour if no module processes the message.
         command = lower(e.arguments[0].split(" ", 1)[0])
-        if "fidi" in command:
+        if self.callsign in command:
             # maybe someone is calling us by name?
             c.privmsg(e.source.nick, _("You don't have to call me by name in private"))
             return
@@ -126,7 +128,7 @@ class FidiBot(irc.bot.SingleServerIRCBot):
         if 'github' in e.source.nick.lower():
             return
         # default behaviour if no module processes the message.
-        if "fidi" in lower(e.arguments[0]):
+        if self.callsign in lower(e.arguments[0]):
             log.debug("Failed to understand public message '%s' from user %s",
                       e.arguments[0], e.source.nick)
             c.privmsg(e.target, _("Someone talking about me? Duh!"))
@@ -154,6 +156,7 @@ def get_args():
     parser.add_argument('-r', '--realname', help="Real name to use. Defaults to nickname")
     parser.add_argument('-x', '--password', help="Password to authenticate with NickServ")
     parser.add_argument('-p', '--port', default=6667, type=int, help="Connect to port")
+    parser.add_argument('-c', '--callsign', default="fidi", help="Callsign for commands")
     return parser.parse_args()
 
 
@@ -161,7 +164,7 @@ def main():
     args = get_args()
     setup_logging()
     bot = FidiBot(args.channel, args.nickname, args.server, args.port,
-                  realname= args.realname, password=args.password)
+                  realname= args.realname, password=args.password, callsign=args.callsign)
     setup_client_logging(bot)
     try:
         bot.start()

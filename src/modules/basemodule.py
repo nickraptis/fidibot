@@ -128,7 +128,7 @@ class BaseCommandContext(BaseContext):
         # look at the forst word of the event
         # to determine if it is addressed to us.
         tokens = self.input.split(" ", 2)
-        if not "fidi" in tokens[0].lower():
+        if not self.bot.callsign in tokens[0].lower():
             return False
         # get the next word to be a command
         try:

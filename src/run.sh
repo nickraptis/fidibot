@@ -24,6 +24,11 @@ then
 	FIDI_COMMAND+=" -p $FIDI_PORT"
 fi
 
+if [[ "$FIDI_CALLSIGN" != "" ]]
+then
+	FIDI_COMMAND+=" -c \"$FIDI_CALLSIGN"\"
+fi
+
 FIDI_COMMAND+=" $FIDI_SERVER $FIDI_CHANNEL $FIDI_USERNAME"
 
 for OPTION in "$@"
