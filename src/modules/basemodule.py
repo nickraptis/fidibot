@@ -29,7 +29,6 @@ For an example, look at the `basiccmds` module.
 """
 
 import logging
-from time import sleep
 from logsetup import escape as esc
 
 

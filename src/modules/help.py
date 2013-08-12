@@ -51,7 +51,7 @@ class HelpContext(BaseCommandContext):
                 if help_item:
                     self.send(target, help_item['summary'])
                 else:
-                    self.send(target, _("No help for module %s"), args[0])
+                    self.send(target, _("No help for %s"), args[0])
         else:
             args.append("")
             cmd = args.pop(0)
@@ -68,7 +68,7 @@ class HelpContext(BaseCommandContext):
             if help_item:
                 self.send(target, index[cmd_type][cmd]['summary'])
             else:
-                self.send(target, _("No help for command %s"), cmd)
+                self.send(target, _("No help for %s"), cmd)
 
 
 class HelpModule(BaseModule):
