@@ -5,6 +5,7 @@ Module for listing commands and help.
 
 from basemodule import BaseModule, BaseCommandContext
 
+from alternatives import _
 
 class HelpContext(BaseCommandContext):
 
@@ -46,7 +47,11 @@ class HelpContext(BaseCommandContext):
             if not args:
                 self.send(target, "usage: help module <module>")
             else:
-                self.send(target, index['modules'][args[0]]['summary'])
+                help_item = index['modules'].get(args[0])
+                if help_item:
+                    self.send(target, help_item['summary'])
+                else:
+                    self.send(target, _("No help for module %s"), args[0])
         else:
             args.append("")
             cmd = args.pop(0)
@@ -59,7 +64,11 @@ class HelpContext(BaseCommandContext):
                 # we shouldn't be here
                 self.logger.error("cmd_list")
                 return
-            self.send(target, index[cmd_type][cmd]['summary'])
+            help_item = index[cmd_type].get(cmd)
+            if help_item:
+                self.send(target, index[cmd_type][cmd]['summary'])
+            else:
+                self.send(target, _("No help for command %s"), cmd)
 
 
 class HelpModule(BaseModule):
