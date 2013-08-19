@@ -56,7 +56,7 @@ class dndContext(BaseCommandContext):
             result = fail
         
         # Send the result
-        self.send(self.channel, _("You roll %s. %s"), roll, result)
+        self.send(self.target, _("You roll %s. %s"), roll, result)
 
 
 class dndModule(BaseModule):
