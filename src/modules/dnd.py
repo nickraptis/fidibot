@@ -1,65 +1,64 @@
+# Author: John Giannakopoulos <giannakopoulosj@gmail.com>
+
 import random        
 from basemodule import BaseModule, BaseCommandContext
+
+from alternatives import _
 
 class dndContext(BaseCommandContext):
 
     def cmd_roll(self, argument):
-        """ Rolling D&D style """
-        #target = channel
-
-        #Analyze and Format Command
+        """
+        Rolling D&D style
+        
+        Usage: roll attack|save modifiers difficulty
+        """
+        
+        # Analyze Arguments
         argument = argument.split()
-        argument[0] = argument[0].lower()
-        resault = "DM: Read The Freaking PHB"
-
-        #Check Valid Command Input
-        if not (len(argument)==3):
-            self.send(self.channel, resault)
+        try:
+            roll_type = argument[0].lower()
+            modifier = int(argument[1])
+            difficulty = int(argument[2])
+        except (IndexError, ValueError):
+            error = _("DM: Read The Freaking PHB")
+            self.send(self.target, error)
             return
-        elif not argument[1].isdigit():
-            self.send(self.channel, resault)
-            return
-        elif not argument[2].isdigit():
-            self.send(self.channel, resault)
-            return
-        else:
-            pass
-            
+        
         #Choose Between Attack or Save
-        if argument[0] == "attack":
-            #ROLL FOR ATTACK
-            roll = random.randint(1, 20)
-            #Attack and AC to Integers
-            att = int(argument[1])
-            ac = int(argument[2])
-            if (roll+att)>=ac:
-                resault = "You Hit"
-            else:
-                resault = "You Miss"
-        elif argument[0] == "save":
-            #ROLL FOR SAVE
-            roll = random.randint(1, 20)
-            #Save and DC to Integers
-            save = int(argument[1])
-            dc = int(argument[2])
-            if (roll+save)>=dc:
-                resault = "You Save"
-            else:
-                resault = "You Fail"
+        if "att" in roll_type:
+            success = _("You Hit")
+            fail = _("You Miss")
+            crit_success = _("Critical Hit!")
+            crit_fail = _("Critical Miss!")
+        elif "sav" in roll_type:
+            success = _("You Save")
+            fail = _("You Fail")
+            crit_success = _("Critical Save!")
+            crit_fail = _("Critical Fail!")
         else:
-            resault = "DM: Read The Freaking PHB"
-            self.send(self.channel, resault)
+            invalid = _("DM: You cannot %s")
+            self.send(self.target, invalid, roll_type)
             return
         
-        if roll==20 or roll==1:
-            if roll == 1:
-                critical = "Critical Fail"
-            elif roll == 20:
-                critical = "Critical Success"
-            self.send(self.channel, ("%s %s %s"), resault, critical, roll)
-        else:
-            self.send(self.channel, ("%s %s"), resault, roll)
+        # ROLL
+        roll = random.randint(1, 20)
         
+        # Determine Critical
+        if roll == 20:
+            result = crit_success
+        elif roll == 1:
+            result = crit_fail
+        # Determine Success
+        elif (roll + modifier) >= difficulty:
+            result = success
+        else:
+            result = fail
+        
+        # Send the result
+        self.send(self.channel, _("You roll %s. %s"), roll, result)
+
+
 class dndModule(BaseModule):
         context_class = dndContext
 

@@ -12,8 +12,11 @@ Base classes live in the 'basemodule' file.
 """
 
 # define modules to get functionality from
-active = ["ignore", "basiccmds", "update", "help", "fail", "weather", "urlparser", "dnd"]
+system_mods = ["ignore", "basiccmds", "update", "help"]
+user_mods = ["fail", "weather", "dnd", "urlparser"]
+final_mods = []
 
+active = system_mods + user_mods + final_mods
 
 def activate_modules():
     """Return the list of active module classes,

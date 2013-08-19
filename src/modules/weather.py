@@ -1,3 +1,5 @@
+# Author: John Giannakopoulos <giannakopoulosj@gmail.com>
+
 import pywapi
 from basemodule import BaseModule, BaseCommandContext
 
