@@ -39,6 +39,7 @@ class UrlParserContext(BaseCommandContext):
             # a HEAD first to thwart attacks
             head = requests.head(url, headers=headers, timeout=5)
             cont_type = head.headers.get('content-type')
+            head.raise_for_status()
             if cont_type and ("html" not in cont_type and
                               "xml" not in cont_type):
                 return head.url, cont_type.split(';')[0]
