@@ -147,6 +147,9 @@ class FidiBot(irc.bot.SingleServerIRCBot):
     def on_bannedfromchan(self, c, e):
         c.execute_delayed(10, c.join, (e.arguments[0],))
 
+    def get_version(self):
+        return "fidibot https://github.com/nickraptis/fidibot"
+
 
 def get_args():
     parser = argparse.ArgumentParser()
