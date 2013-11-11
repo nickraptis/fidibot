@@ -51,10 +51,23 @@ class BasicCommandsContext(BaseCommandContext):
         """Crash the bot for testing purposes"""
         raise IndexError()
 
+    def cmd_error_private(self, argument):
+        """Print the last lines of the error log"""
+        if argument.isdigit():
+            n = min(int(argument), 50)
+        else:
+            n = 5
+        with open("log/errors.log") as f:
+            lines = f.readlines()
+        err = "".join(lines[-n:]).rstrip()
+        if err:
+            self.send(self.target, "%s", err)
+
     # hide commands from help
     cmd_disconnect_private.hidden = True
     cmd_die_private.hidden = True
     cmd_crash_private.hidden = True
+    cmd_error_private.hidden = True
 
 
 class BasicCommandsModule(BaseModule):
