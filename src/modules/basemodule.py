@@ -142,8 +142,11 @@ class BaseCommandContext(BaseContext):
         except IndexError:
             argument = ''
         # try to find a method to dispatch to
-        f = getattr(self, "cmd_"+command+"_public", 
+        try:
+            f = getattr(self, "cmd_"+command+"_public",
                 getattr(self, "cmd_"+command, None))
+        except UnicodeEncodeError:
+            f = None
         if f:
             self.module.logger.debug(
                 "%s sent public command %s with argument %s",
@@ -168,8 +171,11 @@ class BaseCommandContext(BaseContext):
         except IndexError:
             argument = ''
         # try to find a method to dispatch to
-        f = getattr(self, "cmd_"+command+"_private", 
+        try:
+            f = getattr(self, "cmd_"+command+"_private",
                 getattr(self, "cmd_"+command, None))
+        except UnicodeEncodeError:
+            f = None
         if f:
             self.module.logger.debug(
                 "%s sent private command %s with argument %s",
