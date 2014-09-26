@@ -9,6 +9,7 @@ from logsetup import setup_logging, setup_client_logging
 from introspect import build_index
 from modules import activate_modules
 from alternatives import alternatives, read_files, _
+import tools
 
 import logging
 log = logging.getLogger(__name__)
@@ -45,6 +46,9 @@ class FidiBot(irc.bot.SingleServerIRCBot):
         # set up rate limiting after 5 seconds to one message per second
         self.connection.execute_delayed(5,
             self.connection.set_rate_limit, (1,))
+        # set up throttles
+        self.join_throttle = tools.Throttle(10 * 60)
+        self.duh_throttle = tools.Throttle(60)
         # set up keepalive
         self._pings_pending = 0
         self._last_kicker = ''
@@ -131,7 +135,8 @@ class FidiBot(irc.bot.SingleServerIRCBot):
         if self.callsign in lower(e.arguments[0]):
             log.debug("Failed to understand public message '%s' from user %s",
                       e.arguments[0], e.source.nick)
-            c.privmsg(e.target, _("Someone talking about me? Duh!"))
+            if not self.duh_throttle.is_throttled(e.source.nick):
+                c.privmsg(e.target, _("Someone talking about me? Duh!"))
 
     def on_join(self, c, e):
         nick = e.source.nick
@@ -139,7 +144,8 @@ class FidiBot(irc.bot.SingleServerIRCBot):
         if 'github' in nick.lower():
             return
         if not nick == c.get_nickname():
-            c.privmsg(e.target, _("Welcome %s") % nick)
+            if not self.join_throttle.is_throttled(nick):
+                c.privmsg(e.target, _("Welcome %s") % nick)
         elif self._last_kicker:
             c.privmsg(e.target, _("Why did you kick me, %s?") % self._last_kicker)
             self._last_kicker = ''
