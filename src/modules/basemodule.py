@@ -46,10 +46,11 @@ class BaseContext(object):
     
     Convenience attributes:
     -----------------------
-    nick:    Nickname of the user that originated the event.
-    channel: Channel name that the event was originated in, if any.
-    input:   The full string received for the event.
-    target:  The user's nick for privates, or the channel for publics.
+    nick:     Nickname of the user that originated the event.
+    channel:  Channel name that the event was originated in, if any.
+    input:    The full string received for the event.
+    target:   The user's nick for privates, or the channel for publics.
+    is_admin: Whether the user is in the admin list
     
     Usage:
     ------
@@ -95,6 +96,10 @@ class BaseContext(object):
         in line should try to process it.
         """
         return False
+
+    @property
+    def is_admin(self):
+        return self.module.is_admin(self.nick)
 
 
 class BaseCommandContext(BaseContext):
@@ -255,3 +260,6 @@ class BaseModule(object):
             if not line:
                 line = " "
             connection.privmsg(target, line)
+    
+    def is_admin(self, username):
+        return self.bot.admins.is_admin(username)

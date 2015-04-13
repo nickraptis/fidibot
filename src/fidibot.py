@@ -9,7 +9,7 @@ from logsetup import setup_logging, setup_client_logging
 from introspect import build_index
 from modules import activate_modules
 from alternatives import alternatives, read_files, _
-import tools
+import tools, auth
 
 import logging
 log = logging.getLogger(__name__)
@@ -34,8 +34,10 @@ class FidiBot(irc.bot.SingleServerIRCBot):
         self.callsign = callsign
         self.identified = False
         self.alternatives = alternatives
-        self.admin_pass = admin_pass
         self.google_api_key = google_api_key
+        # setup admins
+        #self.admin_pass = admin_pass
+        self.admins = auth.AdminAuth(admin_pass)
         # load modules
         active_modules, active_alternatives = activate_modules()
         self.modules = [m(self) for m in active_modules]

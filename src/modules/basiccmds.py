@@ -39,31 +39,86 @@ class BasicCommandsContext(BaseCommandContext):
         else:
             self.send(self.nick, _("There's nothing to say"))
 
+    def cmd_enable_private(self, argument):
+        """Enable self to use admin commands"""
+        if self.bot.admins.authenticate(argument):
+            self.bot.admins.add(self.nick)
+            self.send(self.nick, _("User %s added to admins"), self.nick)
+            self.logger.info("User %s added to admins" % self.nick)
+        else:
+            self.bot.admins.remove(self.nick)
+            self.logger.warning("User %s tried to elevate privileges with wrong password '%s'" % (self.nick, argument))
+    
+    def cmd_disable_private(self, argument):
+        """Disable self from using admin commands"""
+        if self.is_admin:
+            self.bot.admins.remove(self.nick)
+            self.send(self.nick, _("User %s removed from admins"), self.nick)
+            self.logger.info("User %s removed from admins" % self.nick)
+    
+    def cmd_addadmin_private(self, argument):
+        """Remove user(s) from admin list"""
+        if self.is_admin:
+            users = argument.split()
+            for user in users:
+                self.bot.admins.add(user)
+                self.send(self.nick, _("User %s added to admins"), user)
+                self.logger.info("User %s added %s to admins" % (self.nick, user))
+        else:
+            self.logger.warning("User %s tried to use '%s' without being admin" % (self.nick, "addadmin"))
+    
+    def cmd_remadmin_private(self, argument):
+        """Remove user(s) from admin list"""
+        if self.is_admin:
+            users = argument.split()
+            for user in users:
+                self.bot.admins.remove(user)
+                self.send(self.nick, _("User %s removed from admins"), user)
+                self.logger.info("User %s removed %s from admins" % (self.nick, user))
+        else:
+            self.logger.warning("User %s tried to use '%s' without being admin" % (self.nick, "remadmin"))
+    
     def cmd_disconnect_private(self, argument):
         """Disconnect from server. Bot will try to reconnect"""
-        self.bot.disconnect(_("I'll be back!"))
+        if self.is_admin:
+            self.bot.disconnect(_("I'll be back!"))
+        else:
+            self.logger.warning("User %s tried to use '%s' without being admin" % (self.nick, "disconnect"))
     
     def cmd_die_private(self, argument):
         """Disconnect and exit"""
-        self.bot.die(_("Goodbye cruel world!"))
+        if self.is_admin:
+            self.bot.die(_("Goodbye cruel world!"))
+        else:
+            self.logger.warning("User %s tried to use '%s' without being admin" % (self.nick, "die"))
 
     def cmd_crash_private(self, argument):
         """Crash the bot for testing purposes"""
-        raise IndexError()
+        if self.is_admin:
+            raise IndexError()
+        else:
+            self.logger.warning("User %s tried to use '%s' without being admin" % (self.nick, "crash"))
 
     def cmd_error_private(self, argument):
         """Print the last lines of the error log"""
-        if argument.isdigit():
-            n = min(int(argument), 50)
+        if self.is_admin:
+            if argument.isdigit():
+                n = min(int(argument), 50)
+            else:
+                n = 5
+            with open("log/errors.log") as f:
+                lines = f.readlines()
+            err = "".join(lines[-n:]).rstrip()
+            if err:
+                self.send(self.target, "%s", err)
         else:
-            n = 5
-        with open("log/errors.log") as f:
-            lines = f.readlines()
-        err = "".join(lines[-n:]).rstrip()
-        if err:
-            self.send(self.target, "%s", err)
+            self.logger.warning("User %s tried to use '%s' without being admin" % (self.nick, "error"))
 
     # hide commands from help
+    cmd_enable_private.hidden = True
+    cmd_disable_private.hidden = True
+    cmd_addadmin_private.hidden = True
+    cmd_remadmin_private.hidden = True
     cmd_disconnect_private.hidden = True
     cmd_die_private.hidden = True
     cmd_crash_private.hidden = True
