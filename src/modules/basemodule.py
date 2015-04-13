@@ -243,7 +243,7 @@ class BaseModule(object):
         
         A context should pass it's connection as a key_arg.
 
-        This is the prefferred method to send text back to IRC,
+        This is the preferred method to send text back to IRC,
         as any number of operations, like logging or multiline send,
         can be done before transparent to the caller.
         """
