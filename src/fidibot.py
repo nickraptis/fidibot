@@ -22,7 +22,8 @@ DLB.errors = 'replace'
 class FidiBot(irc.bot.SingleServerIRCBot):
 
     def __init__(self, channel, nickname, server, port=6667,
-                 realname=None, password='', callsign='fidi'):
+                 realname=None, password='', callsign='fidi',
+                 admin_pass=None, google_api_key=None):
         if channel[0] != "#":
             # make sure channel starts with a #
             channel = "#" + channel
@@ -33,6 +34,8 @@ class FidiBot(irc.bot.SingleServerIRCBot):
         self.callsign = callsign
         self.identified = False
         self.alternatives = alternatives
+        self.admin_pass = admin_pass
+        self.google_api_key = google_api_key
         # load modules
         active_modules, active_alternatives = activate_modules()
         self.modules = [m(self) for m in active_modules]
@@ -166,6 +169,8 @@ def get_args():
     parser.add_argument('-x', '--password', help="Password to authenticate with NickServ")
     parser.add_argument('-p', '--port', default=6667, type=int, help="Connect to port")
     parser.add_argument('-c', '--callsign', default="fidi", help="Callsign for commands")
+    parser.add_argument('-s', '--admin-pass', help="Password for admin commands")
+    parser.add_argument('-g', '--google-api-key', help="Google API key for url shortener")
     return parser.parse_args()
 
 
@@ -173,7 +178,8 @@ def main():
     args = get_args()
     setup_logging()
     bot = FidiBot(args.channel, args.nickname, args.server, args.port,
-                  realname= args.realname, password=args.password, callsign=args.callsign)
+                  realname= args.realname, password=args.password, callsign=args.callsign,
+                  admin_pass = args.admin_pass, google_api_key = args.google_api_key)
     setup_client_logging(bot)
     try:
         bot.start()

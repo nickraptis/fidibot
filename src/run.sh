@@ -29,6 +29,16 @@ then
 	FIDI_COMMAND+=" -c \"$FIDI_CALLSIGN"\"
 fi
 
+if [[ "$FIDI_ADMIN" != "" ]]
+then
+	FIDI_COMMAND+=" -s \"$FIDI_ADMIN"\"
+fi
+
+if [[ "$FIDI_GOOGLE_API" != "" ]]
+then
+	FIDI_COMMAND+=" -g \"$FIDI_GOOGLE_API"\"
+fi
+
 FIDI_COMMAND+=" $FIDI_SERVER $FIDI_CHANNEL $FIDI_USERNAME"
 
 for OPTION in "$@"

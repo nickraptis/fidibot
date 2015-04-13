@@ -15,3 +15,5 @@ FIDI_REALNAME="A small python bot"
 #FIDI_PASSWORD="password"
 #FIDI_PORT=6667
 #FIDI_CALLSIGN="fidi"
+#FIDI_ADMIN="adminpassword"
+#FIDI_GOOGLE_API="asdfghjkl"
