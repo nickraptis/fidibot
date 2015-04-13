@@ -64,7 +64,10 @@ class UrlParserContext(BaseCommandContext):
         return resp.url, title
 
     def shorten(self, long_url):
-        goog = Googl()
+        if self.bot.google_api_key:
+            goog = Googl(self.bot.google_api_key)
+        else:
+            goog = Googl()
         resp = goog.shorten(long_url)
         if resp.get('error'):
             error = resp['error']['message']
